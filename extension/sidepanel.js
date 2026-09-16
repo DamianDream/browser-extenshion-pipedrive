@@ -39,6 +39,7 @@
   const tabFavorites = document.querySelector('#tab-favorites');
   const countAllBadge = document.querySelector('#count-all');
   const countFavBadge = document.querySelector('#count-fav');
+  const historyTimeFilter = document.querySelector('#history-time-filter');
   const btnUnique = document.querySelector('#btn-unique');
   const btnClearHistory = document.querySelector('#btn-clear-history');
   const historySearch = document.querySelector('#history-search');
@@ -56,6 +57,7 @@
   let lastRulesSnapshot = null;
   let currentView = 'fields'; // 'fields' | 'history'
   let historyTab = 'all'; // 'all' | 'favorites'
+  let historyPeriod = 'all'; // 'all' | 'today' | 'yesterday' | '3days' | '7days' | '1month' | '3months'
   let isUniqueFilter = false;
 
   function updateStatus(text) {
@@ -590,7 +592,7 @@
   // =========================================================================
   // Navigation & View Switching
   // =========================================================================
-  function switchView(viewName) {
+  async function switchView(viewName) {
     currentView = viewName;
     setNavDropdown(false);
 
@@ -604,6 +606,13 @@
     if (currentViewTitle) {
       currentViewTitle.textContent = viewName === 'history' ? 'History' : 'Fields';
     }
+
+    // Refresh state from storage to guarantee fresh deal history
+    try {
+      const freshData = await api.storage.local.get(['pf_deal_history', 'pf_deal_favorites']);
+      if (freshData.pf_deal_history !== undefined) state['pf_deal_history'] = freshData.pf_deal_history;
+      if (freshData.pf_deal_favorites !== undefined) state['pf_deal_favorites'] = freshData.pf_deal_favorites;
+    } catch {}
 
     // Toggle panels
     if (viewName === 'history') {
@@ -716,6 +725,14 @@
     });
   }
 
+  // Time Period Filter
+  if (historyTimeFilter) {
+    historyTimeFilter.addEventListener('change', () => {
+      historyPeriod = historyTimeFilter.value || 'all';
+      renderHistory();
+    });
+  }
+
   // History Search
   if (historySearch) {
     historySearch.addEventListener('input', () => {
@@ -774,7 +791,42 @@
       displayList = displayList.filter(d => favSet.has(String(d.id)));
     }
 
-    // 2. Filter by Unique (deduplicate by dealId, keep latest visit)
+    // 2. Filter by Time Period (all, today, yesterday, 3days, 7days, 1month, 3months)
+    if (historyPeriod && historyPeriod !== 'all') {
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const startOfYesterday = startOfToday - 86400000;
+      const endOfYesterday = startOfToday;
+
+      displayList = displayList.filter(item => {
+        const t = item.timestamp;
+        if (!t) return false;
+        switch (historyPeriod) {
+          case 'today':
+            return t >= startOfToday;
+          case 'yesterday':
+            return t >= startOfYesterday && t < endOfYesterday;
+          case '3days':
+            return t >= (startOfToday - 2 * 86400000);
+          case '7days':
+            return t >= (startOfToday - 6 * 86400000);
+          case '1month': {
+            const d = new Date(now);
+            d.setMonth(d.getMonth() - 1);
+            return t >= d.getTime();
+          }
+          case '3months': {
+            const d = new Date(now);
+            d.setMonth(d.getMonth() - 3);
+            return t >= d.getTime();
+          }
+          default:
+            return true;
+        }
+      });
+    }
+
+    // 3. Filter by Unique (deduplicate by dealId, keep latest visit)
     if (isUniqueFilter) {
       const seen = new Set();
       const uniqueItems = [];
@@ -788,7 +840,7 @@
       displayList = uniqueItems;
     }
 
-    // 3. Filter by Search Query
+    // 4. Filter by Search Query
     const query = normalize(historySearch ? historySearch.value : '');
     if (query) {
       displayList = displayList.filter(d => {
@@ -909,7 +961,16 @@
       statusDot.classList.remove('connected');
       statusDot.title = 'Ошибка определения активной вкладки';
     }
-    if (currentView === 'fields') render();
+    if (currentView === 'fields') {
+      render();
+    } else if (currentView === 'history') {
+      try {
+        const freshData = await api.storage.local.get(['pf_deal_history', 'pf_deal_favorites']);
+        if (freshData.pf_deal_history !== undefined) state['pf_deal_history'] = freshData.pf_deal_history;
+        if (freshData.pf_deal_favorites !== undefined) state['pf_deal_favorites'] = freshData.pf_deal_favorites;
+      } catch {}
+      renderHistory();
+    }
   }
 
   // Listen for tab switch events
@@ -918,7 +979,7 @@
   }
   if (chrome.tabs?.onUpdated) {
     chrome.tabs.onUpdated.addListener((id, changeInfo) => {
-      if (changeInfo.status === 'complete') checkActiveTab();
+      if (changeInfo.status === 'complete' || changeInfo.url) checkActiveTab();
     });
   }
   chrome.runtime.onMessage.addListener((message) => {

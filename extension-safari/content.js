@@ -447,6 +447,7 @@
   // =========================================================================
   let lastRecordedDeal = null;
   let lastRecordedHref = '';
+  let pollIntervalId = null;
 
   function extractDealInfo(urlStr) {
     try {
@@ -462,20 +463,42 @@
     return null;
   }
 
-  function extractDealTitle(dealId) {
-    const el = document.querySelector(
-      '.cui5-editable-text__box textarea, .cui5-editable-text__input, [data-testid="deal-title"] textarea, [data-testid="deal-title"], h1 textarea, h1'
-    );
-    if (el) {
-      const val = (el.value || el.getAttribute('placeholder') || el.textContent || '').trim();
-      if (val && !val.toLowerCase().includes('додати назву') && !val.toLowerCase().includes('add title')) {
-        return val;
-      }
+  function cleanExtractedTitle(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    let val = raw.trim();
+    if (!val) return '';
+    const lower = val.toLowerCase();
+    if (lower === 'додати назву' || lower === 'add title' || lower === 'назва угоди' || lower === 'deal title') {
+      return '';
     }
+    return val;
+  }
+
+  function extractDealTitle(dealId) {
+    // 1. Primary: Textarea or input inside editable box / h1 / [data-testid="deal-title"]
+    const directInputs = document.querySelectorAll(
+      'h1 textarea, h1 input, .cui5-editable-text__box textarea, .cui5-editable-text__box input, .cui5-editable-text__input, [data-testid="deal-title"] textarea, [data-testid="deal-title"] input'
+    );
+    for (const el of directInputs) {
+      const val = cleanExtractedTitle(el.value || el.getAttribute('placeholder') || el.textContent);
+      if (val) return val;
+    }
+
+    // 2. Direct h1 or deal-title container text
+    const headings = document.querySelectorAll('h1, [data-testid="deal-title"]');
+    for (const h of headings) {
+      // Avoid entire page headers if not relevant
+      const val = cleanExtractedTitle(h.textContent);
+      if (val && (val.includes(dealId) || val.startsWith('#'))) return val;
+    }
+
+    // 3. Document title fallback
     if (document.title) {
       const t = document.title.replace(/\s*[-—|•]\s*(?:Угоди|Deals|Сделки|Pipedrive).*$/i, '').trim();
-      if (t && (t.includes(dealId) || t.startsWith('#'))) return t;
+      const cleaned = cleanExtractedTitle(t);
+      if (cleaned && (cleaned.includes(dealId) || cleaned.startsWith('#'))) return cleaned;
     }
+
     return '#' + dealId;
   }
 
@@ -485,8 +508,8 @@
       const data = await api.storage.local.get('pf_deal_history');
       const list = Array.isArray(data.pf_deal_history) ? data.pf_deal_history : [];
       let changed = false;
-      for (let i = 0; i < Math.min(list.length, 5); i++) {
-        if (list[i].id === dealId && (list[i].title === '#' + dealId || !list[i].title)) {
+      for (let i = 0; i < Math.min(list.length, 10); i++) {
+        if (list[i].id === dealId && (list[i].title === '#' + dealId || !list[i].title || list[i].title !== newTitle)) {
           list[i].title = newTitle;
           changed = true;
         }
@@ -497,21 +520,24 @@
     } catch {}
   }
 
-  function pollUpgradeDealTitle(dealId, maxTries = 10) {
+  function pollUpgradeDealTitle(dealId, maxTries = 20) {
+    if (pollIntervalId) clearInterval(pollIntervalId);
     let count = 0;
-    const interval = setInterval(() => {
+    pollIntervalId = setInterval(() => {
       count++;
       const currentTitle = extractDealTitle(dealId);
       if (currentTitle && currentTitle !== '#' + dealId) {
-        clearInterval(interval);
+        clearInterval(pollIntervalId);
+        pollIntervalId = null;
         if (lastRecordedDeal && lastRecordedDeal.dealId === dealId) {
           lastRecordedDeal.title = currentTitle;
         }
         updateDealTitleInStorage(dealId, currentTitle);
       } else if (count >= maxTries) {
-        clearInterval(interval);
+        clearInterval(pollIntervalId);
+        pollIntervalId = null;
       }
-    }, 400);
+    }, 250);
   }
 
   async function recordDealVisit() {
@@ -521,34 +547,61 @@
 
     const { dealId, url } = dealInfo;
     const now = Date.now();
+    const FIVE_MINUTES = 5 * 60 * 1000;
 
-    if (lastRecordedDeal && lastRecordedDeal.dealId === dealId && (now - lastRecordedDeal.time < 15000)) {
-      if (lastRecordedDeal.title === '#' + dealId) {
-        const t = extractDealTitle(dealId);
-        if (t && t !== '#' + dealId) {
-          lastRecordedDeal.title = t;
-          updateDealTitleInStorage(dealId, t);
-        }
-      }
-      return;
-    }
-
-    const title = extractDealTitle(dealId);
-    lastRecordedDeal = { dealId, time: now, title };
+    let currentTitle = extractDealTitle(dealId);
 
     try {
       const data = await api.storage.local.get('pf_deal_history');
-      const history = Array.isArray(data.pf_deal_history) ? data.pf_deal_history : [];
+      const history = Array.isArray(data.pf_deal_history) ? [...data.pf_deal_history] : [];
+
+      // Check if existing record for this deal was created within the last 5 minutes
+      const existingIdx = history.findIndex(item => item && String(item.id) === String(dealId));
+
+      if (existingIdx !== -1 && (now - (history[existingIdx].timestamp || 0)) < FIVE_MINUTES) {
+        // Within 5 minutes: update timestamp and title (do not add duplicate)
+        const oldItem = history[existingIdx];
+        const effectiveTitle = (currentTitle && currentTitle !== '#' + dealId)
+          ? currentTitle
+          : (oldItem.title || '#' + dealId);
+
+        const updatedItem = {
+          ...oldItem,
+          url,
+          title: effectiveTitle,
+          timestamp: now
+        };
+
+        // Move to top of history
+        history.splice(existingIdx, 1);
+        history.unshift(updatedItem);
+
+        // Cap at 1000 items
+        const trimmed = history.slice(0, 1000);
+        await api.storage.local.set({ pf_deal_history: trimmed });
+
+        lastRecordedDeal = { dealId, time: now, title: effectiveTitle };
+
+        if (effectiveTitle === '#' + dealId) {
+          pollUpgradeDealTitle(dealId);
+        }
+        return;
+      }
+
+      // New record (either first time or > 5 minutes ago)
       const newEntry = {
         id: dealId,
         url,
-        title,
+        title: currentTitle,
         timestamp: now
       };
-      const updated = [newEntry, ...history.slice(0, 999)];
-      await api.storage.local.set({ pf_deal_history: updated });
 
-      if (title === '#' + dealId) {
+      const updatedHistory = [newEntry, ...history.filter(Boolean)].slice(0, 1000);
+      await api.storage.local.set({ pf_deal_history: updatedHistory });
+
+      lastRecordedDeal = { dealId, time: now, title: currentTitle };
+
+      if (currentTitle === '#' + dealId) {
         pollUpgradeDealTitle(dealId);
       }
     } catch (err) {
@@ -583,4 +636,11 @@
 
   window.addEventListener('popstate', checkUrlNavigation);
   checkUrlNavigation();
+
+  // Watch for any in-page SPA URL changes that bypass history methods
+  new MutationObserver(() => {
+    if (location.href !== lastRecordedHref) {
+      checkUrlNavigation();
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true });
 })();

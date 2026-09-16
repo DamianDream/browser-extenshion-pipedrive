@@ -1537,6 +1537,31 @@ footer {
   gap: 6px;
 }
 
+.history-select {
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text2);
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.history-select:hover, .history-select:focus {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-select option {
+  background: #1c1c1e;
+  color: var(--text);
+}
+
 .btn-filter-toggle {
   display: flex;
   align-items: center;
