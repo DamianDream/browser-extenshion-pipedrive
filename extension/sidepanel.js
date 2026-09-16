@@ -39,7 +39,7 @@
 
   // Rainbow Accent management
   function applyAccent(color) {
-    if (!color || typeof color !== 'string') color = '#0a84ff';
+    if (!color || typeof color !== 'string') color = '#30d158';
     if (appContainer) {
       appContainer.style.setProperty('--accent', color);
       appContainer.style.setProperty('--accent-hover', color);
@@ -526,7 +526,7 @@
   // Initial boot
   (async () => {
     state = await api.storage.local.get(null);
-    applyAccent(state['pf-accent-color'] || '#0a84ff');
+    applyAccent(state['pf-accent-color'] || '#30d158');
     await cleanupLegacyStorage();
     await checkActiveTab();
   })().catch((err) => {

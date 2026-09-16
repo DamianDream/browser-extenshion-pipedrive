@@ -21,9 +21,9 @@
   --text5: rgba(235, 235, 245, 0.35);
 
   /* Accents */
-  --accent: #0a84ff;
-  --accent-hover: #0071e3;
-  --accent-bg: rgba(10, 132, 255, 0.15);
+  --accent: #30d158;
+  --accent-hover: #28b84c;
+  --accent-bg: rgba(48, 209, 88, 0.15);
   --success: #30d158;
   --success-bg: rgba(48, 209, 88, 0.15);
   --danger: #ff453a;
