@@ -509,19 +509,21 @@
   }
 
   // Listen for tab switch events
-  if (chrome.tabs?.onActivated) {
-    chrome.tabs.onActivated.addListener(() => checkActiveTab());
+  if (api.tabs?.onActivated) {
+    api.tabs.onActivated.addListener(() => checkActiveTab());
   }
-  if (chrome.tabs?.onUpdated) {
-    chrome.tabs.onUpdated.addListener((id, changeInfo) => {
+  if (api.tabs?.onUpdated) {
+    api.tabs.onUpdated.addListener((id, changeInfo) => {
       if (changeInfo.status === 'complete') checkActiveTab();
     });
   }
-  chrome.runtime.onMessage.addListener((message) => {
-    if (message?.type === 'TAB_CHANGED' || message?.type === 'TAB_UPDATED') {
-      checkActiveTab();
-    }
-  });
+  if (api.runtime?.onMessage) {
+    api.runtime.onMessage.addListener((message) => {
+      if (message?.type === 'TAB_CHANGED' || message?.type === 'TAB_UPDATED') {
+        checkActiveTab();
+      }
+    });
+  }
 
   // Initial boot
   (async () => {

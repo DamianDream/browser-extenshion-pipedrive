@@ -42,8 +42,12 @@
 }
 
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 380px;
+  min-width: 380px;
+  max-width: 380px;
+  height: 580px;
+  min-height: 580px;
+  max-height: 580px;
   background: var(--bg-solid);
   color: var(--text);
   font-family: var(--font-main);
@@ -56,8 +60,8 @@ html, body {
 #app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100%;
+  height: 580px;
+  width: 380px;
   background: var(--bg);
   backdrop-filter: blur(var(--blur-depth)) saturate(160%);
   -webkit-backdrop-filter: blur(var(--blur-depth)) saturate(160%);

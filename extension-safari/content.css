@@ -1,0 +1,21 @@
+/* Injected by the browser at document_start; JS assigns markers from the startup snapshot. */
+/* Normal rows can leave the layout entirely. */
+[data-pf-hidden="1"] { display: none !important; }
+/* Virtual-list items need a positive measured height; zero can trigger remeasurement loops. */
+[data-pf-hidden="virtual"] {
+  box-sizing: border-box !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  max-height: 1px !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  contain: strict !important;
+}
+[data-pf-hidden="virtual"] > * { display: none !important; }

@@ -1,24 +1,16 @@
-// Cross-browser Background Service Worker for Pipedrive Fields (Chrome & Safari)
-const api = typeof browser !== 'undefined' ? browser : chrome;
+// Background Service Worker for Pipedrive Fields (Side Panel)
 
-// Browser detection & action setup
-if (api.sidePanel?.setPanelBehavior) {
-  // Google Chrome: clear popup and open native side panel on click
-  api.action?.setPopup?.({ popup: '' }).catch?.(() => {});
-  api.sidePanel
-    ?.setPanelBehavior?.({ openPanelOnActionClick: true })
-    ?.catch((error) => console.debug('sidePanel behavior setup:', error));
-} else {
-  // Apple Safari & other browsers: open modern sidepanel UI in toolbar popup
-  api.action?.setPopup?.({ popup: 'sidepanel.html' }).catch?.(() => {});
-}
+// Automatically open side panel on extension action click
+chrome.sidePanel
+  ?.setPanelBehavior?.({ openPanelOnActionClick: true })
+  ?.catch((error) => console.debug('sidePanel behavior setup:', error));
 
-// Notify any open side panels / popups when active tab changes
-api.tabs?.onActivated?.addListener?.(async (activeInfo) => {
+// Notify any open side panels when active tab changes
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
-    const tab = await api.tabs.get(activeInfo.tabId);
+    const tab = await chrome.tabs.get(activeInfo.tabId);
     if (tab?.url) {
-      api.runtime.sendMessage({
+      chrome.runtime.sendMessage({
         type: 'TAB_CHANGED',
         tabId: activeInfo.tabId,
         url: tab.url
@@ -27,13 +19,12 @@ api.tabs?.onActivated?.addListener?.(async (activeInfo) => {
   } catch {}
 });
 
-api.tabs?.onUpdated?.addListener?.((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab?.url) {
-    api.runtime.sendMessage({
+    chrome.runtime.sendMessage({
       type: 'TAB_UPDATED',
       tabId,
       url: tab.url
     }).catch(() => {});
   }
 });
-
