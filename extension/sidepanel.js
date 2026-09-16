@@ -130,7 +130,18 @@
   let purrTimeout = null;
 
   if (brandLogoBtn) {
-    brandLogoBtn.addEventListener('click', () => {
+    brandLogoBtn.addEventListener('click', (e) => {
+      // If clicked outside the active target anchor, trigger it programmatically
+      if (!e.target.closest('.css-cat-trigger')) {
+        const nextHash = location.hash === '#css-cat-motion-a' ? '#css-cat-motion-b' : '#css-cat-motion-a';
+        const trigger = brandLogoBtn.querySelector(
+          nextHash === '#css-cat-motion-a' ? '.css-cat-trigger-a' : '.css-cat-trigger-b'
+        );
+        if (trigger) {
+          trigger.click();
+          return;
+        }
+      }
       if (purrTimeout) clearTimeout(purrTimeout);
       const audio = PFMeow.purr();
       brandLogoBtn.classList.add('purring');
@@ -145,7 +156,15 @@
     brandLogoBtn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        brandLogoBtn.click();
+        const nextHash = location.hash === '#css-cat-motion-a' ? '#css-cat-motion-b' : '#css-cat-motion-a';
+        const trigger = brandLogoBtn.querySelector(
+          nextHash === '#css-cat-motion-a' ? '.css-cat-trigger-a' : '.css-cat-trigger-b'
+        );
+        if (trigger) {
+          trigger.click();
+        } else {
+          brandLogoBtn.click();
+        }
       }
     });
   }

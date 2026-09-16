@@ -101,6 +101,7 @@ header {
 }
 
 .brand {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -111,29 +112,584 @@ header {
   transition: opacity 0.15s ease;
 }
 
-.brand:hover .brand-icon {
+.brand:hover .css-cat {
   transform: scale(1.08);
 }
 
-.brand-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: block;
-  object-fit: contain;
+.css-cat-target {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.css-cat,
+.css-cat * {
+  box-sizing: border-box;
+}
+
+.css-cat {
+  --css-cat-size: 48px;
+  --css-cat-mint: #a7e8cd;
+  --css-cat-mint-dark: #82d7b6;
+  --css-cat-navy: #292b70;
+  --css-cat-gold: #e7ad2f;
+  --css-cat-gold-dark: #c98b16;
+  --css-cat-gold-light: #ffd76b;
+  position: relative;
+  display: inline-block;
+  width: min(var(--css-cat-size), 90vw);
+  aspect-ratio: 1;
+  isolation: isolate;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.brand.purring .brand-icon {
-  animation: catPurr 0.65s ease-in-out infinite;
+.css-cat-trigger {
+  position: absolute;
+  inset: 2%;
+  z-index: 50;
+  border-radius: 24%;
+  cursor: pointer;
+  touch-action: manipulation;
+  text-decoration: none;
 }
 
-@keyframes catPurr {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(-4deg); }
-  50% { transform: scale(1.05) rotate(0deg); }
-  75% { transform: scale(1.1) rotate(4deg); }
-  100% { transform: scale(1) rotate(0deg); }
+.css-cat-trigger-a { display: block; }
+.css-cat-trigger-b { display: none; }
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-trigger-a { display: none; }
+#css-cat-motion-a:target ~ .css-cat .css-cat-trigger-b { display: block; }
+#css-cat-motion-b:target ~ .css-cat .css-cat-trigger-a { display: block; }
+#css-cat-motion-b:target ~ .css-cat .css-cat-trigger-b { display: none; }
+
+.css-cat-trigger:focus-visible {
+  outline: 2px solid var(--accent, #30d158);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+.css-cat-shadow {
+  position: absolute;
+  z-index: 0;
+  left: 22%;
+  bottom: 4%;
+  width: 56%;
+  height: 8%;
+  border-radius: 50%;
+  background: rgba(16, 20, 49, .34);
+  filter: blur(calc(var(--css-cat-size) * .025));
+  transform-origin: center;
+}
+
+.css-cat-character {
+  position: absolute;
+  z-index: 2;
+  inset: 4% 4% 7%;
+  transform-origin: 50% 92%;
+  will-change: transform;
+}
+
+.css-cat-body {
+  position: absolute;
+  z-index: 1;
+  left: 21%;
+  top: 41%;
+  width: 58%;
+  height: 51%;
+  border-radius: 47% 47% 42% 42%;
+  background:
+    radial-gradient(circle at 35% 20%, rgba(255,255,255,.3), transparent 32%),
+    linear-gradient(145deg, var(--css-cat-mint), var(--css-cat-mint-dark));
+  box-shadow:
+    inset 0 calc(var(--css-cat-size) * -.014) 0 rgba(35, 104, 88, .1),
+    0 calc(var(--css-cat-size) * .016) calc(var(--css-cat-size) * .03) rgba(9, 16, 45, .12);
+}
+
+.css-cat-head {
+  position: absolute;
+  z-index: 5;
+  left: 13%;
+  top: 8%;
+  width: 74%;
+  height: 57%;
+  border-radius: 48% 48% 44% 44% / 54% 54% 43% 43%;
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255,255,255,.34), transparent 34%),
+    linear-gradient(145deg, #b1edd5 0%, var(--css-cat-mint) 56%, #8bdcbd 100%);
+  box-shadow:
+    inset 0 calc(var(--css-cat-size) * -.012) 0 rgba(36, 108, 91, .1),
+    0 calc(var(--css-cat-size) * .014) calc(var(--css-cat-size) * .026) rgba(14, 21, 54, .13);
+  transform-origin: 50% 77%;
+  will-change: transform;
+}
+
+.css-cat-ear {
+  position: absolute;
+  z-index: -1;
+  top: -7%;
+  width: 29%;
+  height: 45%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #b7efd9, var(--css-cat-mint-dark));
+  border-radius: 72% 18% 18% 24%;
+  transform-origin: 50% 85%;
+  will-change: transform;
+}
+
+.css-cat-ear::after {
+  content: "";
+  position: absolute;
+  inset: 25% 24% 20% 25%;
+  border-radius: 72% 15% 22% 18%;
+  background: linear-gradient(150deg, #3a3b83, var(--css-cat-navy));
+  opacity: .98;
+}
+
+.css-cat-ear-left {
+  left: 3%;
+  transform: rotate(-8deg);
+}
+
+.css-cat-ear-right {
+  right: 3%;
+  transform: scaleX(-1) rotate(-8deg);
+}
+
+.css-cat-face {
+  position: absolute;
+  inset: 0;
+}
+
+.css-cat-eye {
+  position: absolute;
+  top: 44%;
+  width: 11%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--css-cat-navy);
+  box-shadow: inset 0 14% 0 rgba(255,255,255,.08);
+  transform-origin: center;
+  will-change: transform;
+}
+
+.css-cat-eye-left { left: 29%; }
+.css-cat-eye-right { right: 29%; }
+
+.css-cat-nose {
+  position: absolute;
+  left: 45%;
+  top: 57%;
+  width: 10%;
+  height: 8%;
+  border-radius: 58% 58% 72% 72%;
+  background: var(--css-cat-navy);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.css-cat-mouth {
+  position: absolute;
+  left: 38%;
+  top: 62%;
+  width: 24%;
+  height: 15%;
+}
+
+.css-cat-mouth::before,
+.css-cat-mouth::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 72%;
+  border-bottom: max(1.5px, calc(var(--css-cat-size) * .019)) solid var(--css-cat-navy);
+}
+
+.css-cat-mouth::before {
+  left: 0;
+  border-right: max(1px, calc(var(--css-cat-size) * .012)) solid var(--css-cat-navy);
+  border-radius: 0 0 78% 0;
+}
+
+.css-cat-mouth::after {
+  right: 0;
+  border-left: max(1px, calc(var(--css-cat-size) * .012)) solid var(--css-cat-navy);
+  border-radius: 0 0 0 78%;
+}
+
+.css-cat-whiskers {
+  position: absolute;
+  top: 62%;
+  width: 18%;
+  height: max(1px, calc(var(--css-cat-size) * .018));
+  border-radius: 999px;
+  background: var(--css-cat-navy);
+  box-shadow:
+    0 calc(max(2px, var(--css-cat-size) * .045) * -1) 0 var(--css-cat-navy),
+    0 max(2px, calc(var(--css-cat-size) * .045)) 0 var(--css-cat-navy);
+}
+
+.css-cat-whiskers-left {
+  left: 8%;
+  transform: rotate(8deg);
+}
+
+.css-cat-whiskers-right {
+  right: 8%;
+  transform: rotate(-8deg);
+}
+
+.css-cat-coin {
+  position: absolute;
+  z-index: 10;
+  left: 24%;
+  bottom: -5%;
+  width: 52%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  border: calc(var(--css-cat-size) * .022) solid var(--css-cat-gold-light);
+  background:
+    radial-gradient(circle at 34% 24%, #ffd874 0 5%, transparent 20%),
+    linear-gradient(145deg, #f8c84f, var(--css-cat-gold) 58%, var(--css-cat-gold-dark));
+  box-shadow:
+    inset 0 0 0 calc(var(--css-cat-size) * .008) rgba(172, 106, 8, .2),
+    0 calc(var(--css-cat-size) * .02) calc(var(--css-cat-size) * .035) rgba(91, 55, 4, .22);
+  transform-origin: 50% 76%;
+  will-change: transform;
+}
+
+.css-cat-coin-face {
+  position: absolute;
+  inset: 9%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #edba40, #d79a20 72%);
+  box-shadow: inset 0 calc(var(--css-cat-size) * .014) calc(var(--css-cat-size) * .02) rgba(255,255,255,.17);
+}
+
+.css-cat-dollar {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 800 calc(var(--css-cat-size) * .29)/1 Arial, Helvetica, sans-serif;
+  text-shadow: 0 calc(var(--css-cat-size) * .007) 0 rgba(128, 78, 5, .13);
+}
+
+.css-cat-shine {
+  position: absolute;
+  z-index: 4;
+  top: -24%;
+  left: 0;
+  width: 16%;
+  height: 150%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.92), transparent);
+  filter: blur(calc(var(--css-cat-size) * .004));
+  opacity: 0;
+  transform: translateX(-180%) rotate(18deg);
+  will-change: transform, opacity;
+}
+
+.css-cat-paw {
+  position: absolute;
+  z-index: 14;
+  top: 59%;
+  width: 27%;
+  height: 29%;
+  border-radius: 54% 48% 50% 52%;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,255,255,.25), transparent 36%),
+    linear-gradient(145deg, var(--css-cat-mint), var(--css-cat-mint-dark));
+  box-shadow:
+    inset 0 calc(var(--css-cat-size) * -.01) 0 rgba(36, 108, 91, .1),
+    0 calc(var(--css-cat-size) * .01) calc(var(--css-cat-size) * .018) rgba(14,21,54,.12);
+  will-change: transform;
+}
+
+.css-cat-paw::after {
+  content: "";
+  position: absolute;
+  width: 33%;
+  height: 7%;
+  top: 29%;
+  border-radius: 999px;
+  background: rgba(41, 43, 112, .2);
+}
+
+.css-cat-paw-left {
+  left: 3%;
+  transform: rotate(10deg);
+  transform-origin: 78% 28%;
+}
+
+.css-cat-paw-left::after { right: 12%; transform: rotate(35deg); }
+
+.css-cat-paw-right {
+  right: 3%;
+  transform: rotate(-10deg);
+  transform-origin: 22% 28%;
+}
+
+.css-cat-paw-right::after { left: 12%; transform: rotate(-35deg); }
+
+#css-cat-motion-a:target ~ .css-cat {
+  --css-cat-character-animation: css-cat-character-a;
+  --css-cat-head-animation: css-cat-head-a;
+  --css-cat-ear-left-animation: css-cat-ear-left-a;
+  --css-cat-ear-right-animation: css-cat-ear-right-a;
+  --css-cat-eye-animation: css-cat-eye-a;
+  --css-cat-paw-left-animation: css-cat-paw-left-a;
+  --css-cat-paw-right-animation: css-cat-paw-right-a;
+  --css-cat-coin-animation: css-cat-coin-a;
+  --css-cat-shine-animation: css-cat-shine-a;
+  --css-cat-shadow-animation: css-cat-shadow-a;
+}
+
+#css-cat-motion-b:target ~ .css-cat {
+  --css-cat-character-animation: css-cat-character-b;
+  --css-cat-head-animation: css-cat-head-b;
+  --css-cat-ear-left-animation: css-cat-ear-left-b;
+  --css-cat-ear-right-animation: css-cat-ear-right-b;
+  --css-cat-eye-animation: css-cat-eye-b;
+  --css-cat-paw-left-animation: css-cat-paw-left-b;
+  --css-cat-paw-right-animation: css-cat-paw-right-b;
+  --css-cat-coin-animation: css-cat-coin-b;
+  --css-cat-shine-animation: css-cat-shine-b;
+  --css-cat-shadow-animation: css-cat-shadow-b;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-character,
+#css-cat-motion-b:target ~ .css-cat .css-cat-character {
+  animation: var(--css-cat-character-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-head,
+#css-cat-motion-b:target ~ .css-cat .css-cat-head {
+  animation: var(--css-cat-head-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-ear-left,
+#css-cat-motion-b:target ~ .css-cat .css-cat-ear-left {
+  animation: var(--css-cat-ear-left-animation) 3s ease-in-out both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-ear-right,
+#css-cat-motion-b:target ~ .css-cat .css-cat-ear-right {
+  animation: var(--css-cat-ear-right-animation) 3s ease-in-out both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-eye,
+#css-cat-motion-b:target ~ .css-cat .css-cat-eye {
+  animation: var(--css-cat-eye-animation) 3s ease-in-out both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-paw-left,
+#css-cat-motion-b:target ~ .css-cat .css-cat-paw-left {
+  animation: var(--css-cat-paw-left-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-paw-right,
+#css-cat-motion-b:target ~ .css-cat .css-cat-paw-right {
+  animation: var(--css-cat-paw-right-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-coin,
+#css-cat-motion-b:target ~ .css-cat .css-cat-coin {
+  animation: var(--css-cat-coin-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-shine,
+#css-cat-motion-b:target ~ .css-cat .css-cat-shine {
+  animation: var(--css-cat-shine-animation) 3s ease-in-out both;
+}
+
+#css-cat-motion-a:target ~ .css-cat .css-cat-shadow,
+#css-cat-motion-b:target ~ .css-cat .css-cat-shadow {
+  animation: var(--css-cat-shadow-animation) 3s cubic-bezier(.22,.8,.24,1) both;
+}
+
+@keyframes css-cat-character-a {
+  0%, 100% { transform: translateY(0) scale(1); }
+  8% { transform: translateY(2%) scale(1.02,.96); }
+  20% { transform: translateY(5%) scale(.96,1.06); }
+  38% { transform: translateY(-8%) scale(1.03,.98); }
+  58% { transform: translateY(-2%) scale(.99,1.01); }
+  72% { transform: translateY(2%) scale(1.035,.955); }
+  82% { transform: translateY(-1.2%) scale(.99,1.015); }
+  90% { transform: translateY(.5%) scale(1.008,.992); }
+}
+@keyframes css-cat-character-b {
+  0%, 100% { transform: translateY(0) scale(1); }
+  8% { transform: translateY(2%) scale(1.02,.96); }
+  20% { transform: translateY(5%) scale(.96,1.06); }
+  38% { transform: translateY(-8%) scale(1.03,.98); }
+  58% { transform: translateY(-2%) scale(.99,1.01); }
+  72% { transform: translateY(2%) scale(1.035,.955); }
+  82% { transform: translateY(-1.2%) scale(.99,1.015); }
+  90% { transform: translateY(.5%) scale(1.008,.992); }
+}
+
+@keyframes css-cat-head-a {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  23% { transform: translateY(2%) rotate(-2deg); }
+  42% { transform: translateY(-2%) rotate(2deg); }
+  74% { transform: translateY(1%) rotate(-1deg); }
+  88% { transform: translateY(-.4%) rotate(.4deg); }
+}
+@keyframes css-cat-head-b {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  23% { transform: translateY(2%) rotate(-2deg); }
+  42% { transform: translateY(-2%) rotate(2deg); }
+  74% { transform: translateY(1%) rotate(-1deg); }
+  88% { transform: translateY(-.4%) rotate(.4deg); }
+}
+
+@keyframes css-cat-ear-left-a {
+  0%, 100% { transform: rotate(-8deg); }
+  28% { transform: rotate(-14deg); }
+  46% { transform: rotate(-4deg); }
+  78% { transform: rotate(-10deg); }
+}
+@keyframes css-cat-ear-left-b {
+  0%, 100% { transform: rotate(-8deg); }
+  28% { transform: rotate(-14deg); }
+  46% { transform: rotate(-4deg); }
+  78% { transform: rotate(-10deg); }
+}
+
+@keyframes css-cat-ear-right-a {
+  0%, 100% { transform: scaleX(-1) rotate(-8deg); }
+  30% { transform: scaleX(-1) rotate(-15deg); }
+  48% { transform: scaleX(-1) rotate(-3deg); }
+  80% { transform: scaleX(-1) rotate(-10deg); }
+}
+@keyframes css-cat-ear-right-b {
+  0%, 100% { transform: scaleX(-1) rotate(-8deg); }
+  30% { transform: scaleX(-1) rotate(-15deg); }
+  48% { transform: scaleX(-1) rotate(-3deg); }
+  80% { transform: scaleX(-1) rotate(-10deg); }
+}
+
+@keyframes css-cat-eye-a {
+  0%, 39%, 50%, 100% { transform: scaleY(1); }
+  42%, 47% { transform: scaleY(.08); }
+}
+@keyframes css-cat-eye-b {
+  0%, 39%, 50%, 100% { transform: scaleY(1); }
+  42%, 47% { transform: scaleY(.08); }
+}
+
+@keyframes css-cat-paw-left-a {
+  0%, 100% { transform: rotate(10deg) translate(0); }
+  25%, 52% { transform: rotate(16deg) translate(4%,-2%); }
+  76% { transform: rotate(8deg); }
+}
+@keyframes css-cat-paw-left-b {
+  0%, 100% { transform: rotate(10deg) translate(0); }
+  25%, 52% { transform: rotate(16deg) translate(4%,-2%); }
+  76% { transform: rotate(8deg); }
+}
+
+@keyframes css-cat-paw-right-a {
+  0%, 100% { transform: rotate(-10deg) translate(0); }
+  25%, 52% { transform: rotate(-16deg) translate(-4%,-2%); }
+  76% { transform: rotate(-8deg); }
+}
+@keyframes css-cat-paw-right-b {
+  0%, 100% { transform: rotate(-10deg) translate(0); }
+  25%, 52% { transform: rotate(-16deg) translate(-4%,-2%); }
+  76% { transform: rotate(-8deg); }
+}
+
+@keyframes css-cat-coin-a {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  20% { transform: rotate(-4deg) translateY(1%); }
+  43% { transform: rotate(5deg) translateY(-2%); }
+  62% { transform: rotate(-2deg); }
+  78% { transform: rotate(1deg); }
+  90% { transform: rotate(-.4deg); }
+}
+@keyframes css-cat-coin-b {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  20% { transform: rotate(-4deg) translateY(1%); }
+  43% { transform: rotate(5deg) translateY(-2%); }
+  62% { transform: rotate(-2deg); }
+  78% { transform: rotate(1deg); }
+  90% { transform: rotate(-.4deg); }
+}
+
+@keyframes css-cat-shine-a {
+  0%, 39%, 63%, 100% { opacity: 0; transform: translateX(-180%) rotate(18deg); }
+  42% { opacity: .15; transform: translateX(-140%) rotate(18deg); }
+  52% { opacity: .9; transform: translateX(315%) rotate(18deg); }
+  62% { opacity: 0; transform: translateX(650%) rotate(18deg); }
+}
+@keyframes css-cat-shine-b {
+  0%, 39%, 63%, 100% { opacity: 0; transform: translateX(-180%) rotate(18deg); }
+  42% { opacity: .15; transform: translateX(-140%) rotate(18deg); }
+  52% { opacity: .9; transform: translateX(315%) rotate(18deg); }
+  62% { opacity: 0; transform: translateX(650%) rotate(18deg); }
+}
+
+@keyframes css-cat-shadow-a {
+  0%, 100% { transform: scaleX(1); opacity: .28; }
+  20% { transform: scaleX(.9); opacity: .24; }
+  40% { transform: scaleX(.58); opacity: .14; }
+  72% { transform: scaleX(1.08); opacity: .34; }
+  86% { transform: scaleX(.96); opacity: .27; }
+}
+@keyframes css-cat-shadow-b {
+  0%, 100% { transform: scaleX(1); opacity: .28; }
+  20% { transform: scaleX(.9); opacity: .24; }
+  40% { transform: scaleX(.58); opacity: .14; }
+  72% { transform: scaleX(1.08); opacity: .34; }
+  86% { transform: scaleX(.96); opacity: .27; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #css-cat-motion-a:target ~ .css-cat .css-cat-character,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-character,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-head,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-head,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-ear,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-ear,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-eye,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-eye,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-paw,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-paw,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-coin,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-coin,
+  #css-cat-motion-a:target ~ .css-cat .css-cat-shadow,
+  #css-cat-motion-b:target ~ .css-cat .css-cat-shadow {
+    animation: none;
+  }
+
+  #css-cat-motion-a:target ~ .css-cat .css-cat-character {
+    animation: css-cat-reduced-a 160ms ease-out both;
+  }
+
+  #css-cat-motion-b:target ~ .css-cat .css-cat-character {
+    animation: css-cat-reduced-b 160ms ease-out both;
+  }
+
+  .css-cat-shine { display: none; }
+}
+
+@keyframes css-cat-reduced-a {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(.985); }
+}
+
+@keyframes css-cat-reduced-b {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(.985); }
 }
 
 .brand-info {

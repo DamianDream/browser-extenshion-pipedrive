@@ -10,8 +10,44 @@
   <div id="app-container">
     <header>
       <div class="heading-row">
-        <div class="brand" id="brand-logo-btn" role="button" tabindex="0" title="Погладить котика">
-          <img src="icons/icon-48.png" alt="Logo" class="brand-icon">
+        <div class="brand" id="brand-logo-btn" title="Погладить котика">
+          <span id="css-cat-motion-a" class="css-cat-target" aria-hidden="true"></span>
+          <span id="css-cat-motion-b" class="css-cat-target" aria-hidden="true"></span>
+          <div class="css-cat brand-icon" style="--css-cat-size: 48px">
+            <a class="css-cat-trigger css-cat-trigger-a" href="#css-cat-motion-a"
+               aria-label="Погладить котика" title="Погладить котика"></a>
+            <a class="css-cat-trigger css-cat-trigger-b" href="#css-cat-motion-b"
+               aria-label="Погладить котика" title="Погладить котика"></a>
+
+            <div class="css-cat-shadow" aria-hidden="true"></div>
+
+            <div class="css-cat-character" aria-hidden="true">
+              <div class="css-cat-body"></div>
+
+              <div class="css-cat-head">
+                <i class="css-cat-ear css-cat-ear-left"></i>
+                <i class="css-cat-ear css-cat-ear-right"></i>
+
+                <div class="css-cat-face">
+                  <i class="css-cat-eye css-cat-eye-left"></i>
+                  <i class="css-cat-eye css-cat-eye-right"></i>
+                  <i class="css-cat-nose"></i>
+                  <i class="css-cat-mouth"></i>
+                  <i class="css-cat-whiskers css-cat-whiskers-left"></i>
+                  <i class="css-cat-whiskers css-cat-whiskers-right"></i>
+                </div>
+              </div>
+
+              <div class="css-cat-coin">
+                <i class="css-cat-coin-face"></i>
+                <b class="css-cat-dollar">$</b>
+                <i class="css-cat-shine"></i>
+              </div>
+
+              <i class="css-cat-paw css-cat-paw-left"></i>
+              <i class="css-cat-paw css-cat-paw-right"></i>
+            </div>
+          </div>
           <div class="brand-info">
             <div class="brand-title-wrap">
               <h1 class="brand-title">Pipedrive Fields</h1>
