@@ -671,7 +671,6 @@
   }
 
   async function toggleFavorite(dealId) {
-    PFMeow.play(state['pf-sound-enabled'] !== false);
     const favs = new Set(getDealFavorites().map(String));
     const idStr = String(dealId);
     if (favs.has(idStr)) {
@@ -840,13 +839,26 @@
       displayList = uniqueItems;
     }
 
-    // 4. Filter by Search Query
-    const query = normalize(historySearch ? historySearch.value : '');
+    // 4. Filter by Search Query (by title, #id, or raw id)
+    const rawQuery = (historySearch ? historySearch.value : '').trim();
+    const query = normalize(rawQuery);
+    const cleanIdQuery = rawQuery.replace(/^#/, '').trim().toLowerCase();
+
     if (query) {
       displayList = displayList.filter(d => {
         const titleStr = normalize(d.title || '');
-        const idStr = String(d.id || '');
-        return titleStr.includes(query) || idStr.includes(query);
+        const idStr = String(d.id || '').toLowerCase();
+        let urlId = '';
+        if (d.url) {
+          const m = String(d.url).match(/\/deal\/(\d+)/i);
+          if (m) urlId = m[1].toLowerCase();
+        }
+        return (
+          titleStr.includes(query) ||
+          idStr.includes(query) ||
+          (cleanIdQuery && (idStr.includes(cleanIdQuery) || urlId.includes(cleanIdQuery))) ||
+          (urlId && urlId.includes(query))
+        );
       });
     }
 
@@ -887,11 +899,29 @@
       link.textContent = deal.title || (deal.id ? `Сделка #${deal.id}` : 'Сделка Pipedrive');
       link.title = deal.title || '';
 
+      // Deal ID from id or url
+      let dealNum = deal.id;
+      if (!dealNum && deal.url) {
+        const m = String(deal.url).match(/\/deal\/(\d+)/i);
+        if (m) dealNum = m[1];
+      }
+
+      const metaRow = document.createElement('div');
+      metaRow.className = 'deal-meta';
+
+      if (dealNum) {
+        const idSpan = document.createElement('span');
+        idSpan.className = 'deal-id';
+        idSpan.textContent = `#${dealNum}`;
+        metaRow.append(idSpan);
+      }
+
       const dateSpan = document.createElement('span');
       dateSpan.className = 'deal-date';
       dateSpan.textContent = formatDealDate(deal.timestamp);
 
-      body.append(link, dateSpan);
+      metaRow.append(dateSpan);
+      body.append(link, metaRow);
 
       const favBtn = document.createElement('button');
       favBtn.type = 'button';
