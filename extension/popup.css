@@ -1,0 +1,41 @@
+:root { color-scheme: light; font: 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color: #243346; }
+body { width: 370px; margin: 0; background: #f6f8fb; }
+header { padding: 20px 18px 10px; } h1 { font-size: 19px; margin: 0 0 6px; }
+p { line-height: 1.5; margin: 0; color: #657489; }
+#search { box-sizing: border-box; margin: 0 18px 14px; width: calc(100% - 36px); padding: 10px 12px; border: 1px solid #cdd6e0; border-radius: 9px; font: inherit; }
+main { max-height: 440px; overflow: auto; padding: 0 18px; }
+section { background: white; border: 1px solid #dde4ec; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; }
+.group { background: #eef3f8; } .expand { border: 0; background: none; text-align: left; font: inherit; font-weight: 650; color: inherit; padding: 0; cursor: pointer; flex: 1; overflow-wrap: anywhere; }
+.field { border-top: 1px solid #f0f2f5; } .field span { overflow-wrap: anywhere; }
+input[type=checkbox] { appearance: none; flex: 0 0 34px; width: 34px; height: 20px; border-radius: 12px; background: #aab4c2; position: relative; cursor: pointer; margin: 0; }
+input[type=checkbox]::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; background: white; border-radius: 50%; }
+input:checked { background: #22865f; } input:checked::after { left: 17px; }
+:focus-visible { outline: 2px solid #326be5; outline-offset: 3px; }
+footer { font-size: 11px; padding: 14px 18px; color: #657489; }
+.empty { padding: 15px 0 25px; } .muted { opacity: .65; }
+#scan { margin: 0 18px 14px; padding: 9px 12px; border: 1px solid #cdd6e0; border-radius: 8px; background: white; color: #243346; font: inherit; cursor: pointer; }
+#scan:disabled { opacity: .5; cursor: default; }
+.backup { display: flex; gap: 8px; margin: 0 18px 14px; }
+.backup button { flex: 1; padding: 8px; border: 1px solid #cdd6e0; border-radius: 8px; background: white; font: inherit; cursor: pointer; }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.header-actions { display: flex; align-items: center; gap: 4px; }
+.icon-btn { border: 0; border-radius: 8px; background: transparent; color: #53657a; font-size: 22px; width: 34px; height: 34px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background-color .15s, color .15s; }
+.icon-btn:hover { background: #e5ebf3; }
+.icon-btn.danger { color: #d9383a; font-size: 20px; font-weight: bold; }
+.icon-btn.danger:hover { background: #fee7e7; color: #b71c1c; }
+#settings-toggle[aria-expanded="true"] { background: #e5ebf3; }
+.reset-confirm { display: flex; gap: 8px; margin: 8px 0 10px; }
+.reset-confirm[hidden] { display: none; }
+.btn-confirm { flex: 1; padding: 7px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background-color .15s, border-color .15s; }
+.btn-confirm.revert { border: 1px solid #cdd6e0; background: white; color: #243346; }
+.btn-confirm.revert:hover { background: #f0f3f6; }
+.btn-confirm.keep { border: 1px solid #d9383a; background: #d9383a; color: white; }
+.btn-confirm.keep:hover { background: #b71c1c; border-color: #b71c1c; }
+#settings-panel { border-bottom: 1px solid #dde4ec; margin-bottom: 14px; padding-top: 4px; }
+#settings-panel[hidden] { display: none; }
+.sound-setting { margin: 0 6px 10px; }
+#scan-loader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; background: rgba(246,248,251,.94); text-align: center; }
+#scan-loader[hidden] { display: none; }
+#scan-loader video { display: block; width: 180px; max-height: 220px; border-radius: 14px; object-fit: contain; }
+#scan-loader strong { font-size: 14px; color: #243346; }

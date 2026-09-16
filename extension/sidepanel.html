@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipedrive Fields</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app-container">
+    <header>
+      <div class="heading-row">
+        <div class="brand" id="brand-logo-btn" role="button" tabindex="0" title="Погладить котика">
+          <img src="icons/icon-48.png" alt="Logo" class="brand-icon">
+          <div class="brand-info">
+            <div class="brand-title-wrap">
+              <h1 class="brand-title">Pipedrive Fields</h1>
+              <span id="status-dot" class="status-dot" title="Ожидание Pipedrive…"></span>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="settings-toggle" class="clean-icon-btn" aria-label="Настройки" title="Настройки" aria-expanded="false" aria-controls="settings-panel">⚙</button>
+        </div>
+      </div>
+
+      <div id="reset-confirm" class="reset-confirm-bar" hidden>
+        <button id="reset-revert" class="btn-confirm revert">Повернуть як було?</button>
+        <button id="reset-keep" class="btn-confirm keep">Хай буде так!</button>
+      </div>
+    </header>
+
+    <div id="scan-loader" hidden role="status" aria-live="polite" aria-label="Идёт сканирование страницы">
+      <video id="scan-loader-video" muted loop playsinline preload="auto">
+        <source src="cat-loader.mp4" type="video/mp4">
+      </video>
+      <strong>Ищу новые группы и поля…</strong>
+    </div>
+
+    <!-- Modal confirmation for Reset Rules -->
+    <div id="reset-modal" class="modal-backdrop" hidden>
+      <div class="modal-card">
+        <div class="modal-title">Сброс правил скрытия</div>
+        <div class="modal-text">Вы уверены, что хотите сбросить все настройки скрытия пунктов меню? Все группы и поля снова станут видимыми.</div>
+        <div class="modal-actions">
+          <button id="modal-cancel-btn" class="modal-btn secondary">Отмена</button>
+          <button id="modal-confirm-btn" class="modal-btn danger">Сбросить</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="settings-panel" hidden>
+      <!-- Theme Switcher -->
+      <div class="setting-row theme-row">
+        <span class="setting-label-text">Тема</span>
+        <div class="theme-segmented-control" role="radiogroup" aria-label="Тема оформления">
+          <button type="button" class="theme-btn active" data-theme="dark">Тёмная</button>
+          <button type="button" class="theme-btn" data-theme="light">Светлая</button>
+          <button type="button" class="theme-btn" data-theme="mono">Ч/Б</button>
+        </div>
+      </div>
+
+      <!-- Rainbow Accent Picker (7 colors) -->
+      <div class="setting-row accent-row">
+        <span class="setting-label-text">Акцент</span>
+        <div class="rainbow-swatches" role="radiogroup" aria-label="Цвет акцента">
+          <button type="button" class="accent-dot" data-color="#ff453a" style="--c: #ff453a" title="Красный" aria-label="Красный"></button>
+          <button type="button" class="accent-dot" data-color="#ff9f0a" style="--c: #ff9f0a" title="Оранжевый" aria-label="Оранжевый"></button>
+          <button type="button" class="accent-dot" data-color="#ffd60a" style="--c: #ffd60a" title="Жёлтый" aria-label="Жёлтый"></button>
+          <button type="button" class="accent-dot" data-color="#30d158" style="--c: #30d158" title="Зелёный" aria-label="Зелёный"></button>
+          <button type="button" class="accent-dot" data-color="#64d2ff" style="--c: #64d2ff" title="Голубой" aria-label="Голубой"></button>
+          <button type="button" class="accent-dot active" data-color="#0a84ff" style="--c: #0a84ff" title="Синий" aria-label="Синий"></button>
+          <button type="button" class="accent-dot" data-color="#bf5af2" style="--c: #bf5af2" title="Фиолетовый" aria-label="Фиолетовый"></button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-wrap">
+          <span id="sound-icon-display" class="clean-setting-icon sound-icon" title="Нажмите для проверки звука">🐱</span>
+          <span class="setting-label-text">Звуки мяуканья</span>
+        </div>
+        <label class="ios-switch">
+          <input id="sound-enabled" type="checkbox" checked>
+          <span class="ios-slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label-wrap">
+          <span class="clean-setting-icon reset-icon">↺</span>
+          <span class="setting-label-text">Сбросить правила</span>
+        </div>
+        <button id="reset-rules-btn" class="action-btn danger-sm-btn">Сбросить</button>
+      </div>
+
+      <button id="scan" class="action-btn primary" disabled>Сканировать страницу Pipedrive</button>
+      <div class="backup-row">
+        <button id="export" class="action-btn">Экспорт</button>
+        <button id="import" class="action-btn">Импорт</button>
+      </div>
+      <input id="backup-file" type="file" accept=".json,application/json" hidden>
+    </div>
+
+    <div class="search-wrapper">
+      <div class="search-inner">
+        <span class="search-icon">🔍</span>
+        <input id="search" class="search-input" type="search" placeholder="Поиск по группам и полям…" aria-label="Поиск по группам и полям">
+        <button id="search-clear" class="search-clear" aria-label="Очистить поиск">✕</button>
+      </div>
+    </div>
+
+    <main id="groups"></main>
+
+    <footer>Включено = видно · Применяется в реальном времени</footer>
+  </div>
+
+  <script src="shared.js"></script>
+  <script src="backup.js"></script>
+  <script src="sound.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

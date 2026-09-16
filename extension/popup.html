@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Поля Pipedrive</title><link rel="stylesheet" href="popup.css"></head>
+<body><header>
+<div class="heading">
+  <h1>Поля Pipedrive</h1>
+  <div class="header-actions">
+    <button id="reset-rules" class="icon-btn danger" aria-label="Сбросить правила" title="Сбросить правила">↺</button>
+    <button id="settings-toggle" class="icon-btn" aria-label="Настройки" title="Настройки" aria-expanded="false" aria-controls="settings-panel">⚙</button>
+  </div>
+</div>
+<div id="reset-confirm" class="reset-confirm" hidden>
+  <button id="reset-revert" class="btn-confirm revert">Повернуть як було?</button>
+  <button id="reset-keep" class="btn-confirm keep">Хай буде так!</button>
+</div>
+<p id="status" role="status">Загрузка…</p></header>
+<div id="scan-loader" hidden role="status" aria-live="polite" aria-label="Идёт сканирование страницы">
+<video id="scan-loader-video" muted loop playsinline preload="auto"><source src="cat-loader.mp4" type="video/mp4"></video>
+<strong>Ищу новые группы и поля…</strong>
+</div>
+<div id="settings-panel" hidden>
+<label class="row sound-setting"><span>Мяу при переключении</span><input id="sound-enabled" type="checkbox" role="switch" checked></label>
+<button id="scan" disabled>Сканировать страницу</button>
+<div class="backup"><button id="export">Экспорт настроек</button><button id="import">Импорт настроек</button><input id="backup-file" type="file" accept=".json,application/json" hidden></div>
+</div>
+<input id="search" type="search" placeholder="Найти группу или поле" aria-label="Поиск группы или поля">
+<main id="groups"></main><footer>Включено = видно · Изменения применяются после обновления Pipedrive</footer>
+<script src="shared.js"></script><script src="backup.js"></script><script src="sound.js"></script><script src="popup.js"></script></body></html>
