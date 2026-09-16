@@ -548,6 +548,7 @@
     const { dealId, url } = dealInfo;
     const now = Date.now();
     const FIVE_MINUTES = 5 * 60 * 1000;
+    const HISTORY_LIMIT = 10000;
 
     let currentTitle = extractDealTitle(dealId);
 
@@ -576,8 +577,8 @@
         history.splice(existingIdx, 1);
         history.unshift(updatedItem);
 
-        // Cap at 1000 items
-        const trimmed = history.slice(0, 1000);
+        // Cap at 10000 items
+        const trimmed = history.slice(0, HISTORY_LIMIT);
         await api.storage.local.set({ pf_deal_history: trimmed });
 
         lastRecordedDeal = { dealId, time: now, title: effectiveTitle };
@@ -596,7 +597,7 @@
         timestamp: now
       };
 
-      const updatedHistory = [newEntry, ...history.filter(Boolean)].slice(0, 1000);
+      const updatedHistory = [newEntry, ...history.filter(Boolean)].slice(0, HISTORY_LIMIT);
       await api.storage.local.set({ pf_deal_history: updatedHistory });
 
       lastRecordedDeal = { dealId, time: now, title: currentTitle };
