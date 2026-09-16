@@ -622,6 +622,21 @@ main#groups {
   transform: translateY(-1px);
 }
 
+/* Fully disabled group (group off + all fields off) */
+.group-card.fully-disabled {
+  opacity: 0.42;
+  filter: grayscale(0.25);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.group-card.fully-disabled:hover {
+  opacity: 0.80;
+  filter: grayscale(0);
+  border-color: var(--border2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 .group-header {
   display: flex;
   align-items: center;

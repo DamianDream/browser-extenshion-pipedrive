@@ -351,6 +351,7 @@
       } catch {
         input.checked = isHidden;
       }
+      render();
     });
 
     labelWrap.append(input, slider);
@@ -369,6 +370,19 @@
     search.focus();
     render();
   });
+
+  // Check if a group is completely disabled (group off AND all its fields off)
+  function isGroupFullyDisabled(gid, group) {
+    if (state['hidden:' + gid] !== true) return false;
+    if (group.fields && group.fields.size > 0) {
+      for (const fid of group.fields.keys()) {
+        if (state['hidden:' + fid] !== true) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   // Render main groups and fields
   function render() {
@@ -389,7 +403,14 @@
     });
 
     let count = 0;
-    const sortedGroups = [...groups].sort((a, b) => a[1].label.localeCompare(b[1].label));
+    const sortedGroups = [...groups].sort((a, b) => {
+      const aDisabled = isGroupFullyDisabled(a[0], a[1]);
+      const bDisabled = isGroupFullyDisabled(b[0], b[1]);
+      if (aDisabled !== bDisabled) {
+        return aDisabled ? 1 : -1; // Disabled groups go to the bottom
+      }
+      return a[1].label.localeCompare(b[1].label);
+    });
 
     for (const [gid, group] of sortedGroups) {
       const groupMatch = normalize(group.label).includes(query);
@@ -398,8 +419,9 @@
       if (!groupMatch && !fields.length) continue;
       count++;
 
+      const isFullyDisabled = isGroupFullyDisabled(gid, group);
       const groupCard = document.createElement('div');
-      groupCard.className = 'group-card';
+      groupCard.className = 'group-card' + (isFullyDisabled ? ' fully-disabled' : '');
 
       const headerRow = document.createElement('div');
       headerRow.className = 'group-header';
