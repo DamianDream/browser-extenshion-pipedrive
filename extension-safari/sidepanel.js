@@ -689,41 +689,81 @@
   }
 
   async function deleteHistoryRecord(deal) {
-    const list = getDealHistory();
-    const isUniqueMode = historyFilterUnique;
-    const newList = list.filter(d => {
-      if (isUniqueMode) {
-        return String(d.id) !== String(deal.id);
-      }
-      if (deal.timestamp && d.timestamp) {
-        return !(String(d.id) === String(deal.id) && d.timestamp === deal.timestamp);
-      }
-      if (d.url && deal.url) {
-        return !(String(d.id) === String(deal.id) && d.url === deal.url);
-      }
-      return String(d.id) !== String(deal.id);
-    });
-
-    state['pf_deal_history'] = newList;
-    const toSave = { 'pf_deal_history': newList };
-
-    // If no more records for this deal remain in history, remove from favorites as well
-    const remainingForDeal = newList.some(d => String(d.id) === String(deal.id));
-    if (!remainingForDeal) {
-      const favs = new Set(getDealFavorites().map(String));
-      if (favs.has(String(deal.id))) {
-        favs.delete(String(deal.id));
-        state['pf_deal_favorites'] = [...favs];
-        toSave['pf_deal_favorites'] = state['pf_deal_favorites'];
-      }
-    }
-
     try {
+      const data = await api.storage.local.get(['pf_deal_history', 'pf_deal_favorites']);
+      const list = Array.isArray(data.pf_deal_history)
+        ? [...data.pf_deal_history]
+        : (Array.isArray(state['pf_deal_history']) ? [...state['pf_deal_history']] : []);
+
+      const getDealId = (item) => {
+        if (!item) return '';
+        if (item.id) return String(item.id);
+        if (item.url) {
+          const m = String(item.url).match(/\/deal\/(\d+)/i);
+          if (m) return m[1];
+        }
+        return '';
+      };
+
+      const targetId = getDealId(deal);
+      const isUniqueMode = Boolean(isUniqueFilter);
+
+      const newList = list.filter(d => {
+        if (!d) return false;
+        if (d === deal) return false;
+        const curId = getDealId(d);
+
+        // In unique mode, remove all instances of this deal
+        if (isUniqueMode && targetId && curId && targetId === curId) {
+          return false;
+        }
+
+        // Match by timestamp if both have it
+        if (deal.timestamp && d.timestamp && deal.timestamp === d.timestamp) {
+          if (targetId && curId) {
+            return targetId !== curId;
+          }
+          if (deal.url && d.url) {
+            return deal.url !== d.url;
+          }
+          return false;
+        }
+
+        // Match by id and url
+        if (targetId && curId && targetId === curId) {
+          if (deal.url && d.url) {
+            return deal.url !== d.url;
+          }
+          if (!deal.timestamp && !d.timestamp) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      state['pf_deal_history'] = newList;
+      const toSave = { 'pf_deal_history': newList };
+
+      // If no more records for this deal remain in history, remove from favorites as well
+      const favList = Array.isArray(data.pf_deal_favorites)
+        ? data.pf_deal_favorites
+        : (Array.isArray(state['pf_deal_favorites']) ? state['pf_deal_favorites'] : []);
+      const remainingForDeal = targetId ? newList.some(d => getDealId(d) === targetId) : false;
+      if (!remainingForDeal && targetId) {
+        const favs = new Set(favList.map(String));
+        if (favs.has(targetId)) {
+          favs.delete(targetId);
+          state['pf_deal_favorites'] = [...favs];
+          toSave['pf_deal_favorites'] = state['pf_deal_favorites'];
+        }
+      }
+
       await api.storage.local.set(toSave);
+      renderHistory();
     } catch (err) {
       console.error('Failed to delete history record:', err);
     }
-    renderHistory();
   }
 
   // History Tabs Switching
@@ -994,6 +1034,7 @@
 
       delBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
+        e.preventDefault();
         await deleteHistoryRecord(deal);
       });
 
