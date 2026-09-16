@@ -43,21 +43,23 @@
 
 ## Safari на Mac
 
-В папке `extension` находится общий исходный код WebExtension. Это не подписанное приложение Safari. На машине сборки отсутствует полный Xcode, поэтому готовый Safari .app не собран и работа в Safari не проверена.
+Расширение полностью совместимо с Apple Safari. Его можно запустить двумя способами:
 
-После установки полного Xcode откройте Terminal и выполните команду, подставив путь к распакованной папке:
+### Способ 1: Прямая загрузка без Xcode (Safari 17+)
+1. Откройте **Safari** → **Настройки** (Settings) → вкладка **Дополнения** (Advanced).
+2. Включите пункт **«Показывать функции для веб-разработчиков»** (Show features for web developers).
+3. Перейдите во вкладку **Разработка** (Developer) в настройках Safari.
+4. Нажмите **«Загрузить временное расширение…»** (Add Temporary Extension…) и выберите распакованную папку `extension`.
+5. Подтвердите паролем или Touch ID. Значок расширения появится на панели Safari.
+6. При клике откроется окно управления полями Pipedrive со стильным гласморфизмом, звуками котика и радужным акцентом.
 
+### Способ 2: Упаковка в приложение через Xcode (для публикации)
+Для постоянного распространения через App Store или TestFlight с полным Xcode:
 ```sh
 xcrun safari-web-extension-packager "/полный/путь/pipedrive-fields/extension"
+# или в Xcode 14/15:
+# xcrun safari-web-extension-converter "/полный/путь/pipedrive-fields/extension"
 ```
-
-В предыдущих версиях Xcode инструмент называется:
-
-```sh
-xcrun safari-web-extension-converter "/полный/путь/pipedrive-fields/extension"
-```
-
-Откройте созданный проект в Xcode, выберите macOS-приложение, настройте Signing & Capabilities при необходимости и запустите через Run. В Safari → Настройки → Расширения включите расширение и разрешите доступ к Pipedrive. Для локальной разработки без подписи может потребоваться «Разрешить неподписанные расширения» в меню разработчика Safari.
 
 Официальная инструкция Apple: https://developer.apple.com/documentation/safariservices/packaging-a-web-extension-for-safari
 

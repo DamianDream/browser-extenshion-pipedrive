@@ -509,22 +509,29 @@
   }
 
   // Listen for tab switch events
-  if (chrome.tabs?.onActivated) {
-    chrome.tabs.onActivated.addListener(() => checkActiveTab());
+  if (api.tabs?.onActivated) {
+    api.tabs.onActivated.addListener(() => checkActiveTab());
   }
-  if (chrome.tabs?.onUpdated) {
-    chrome.tabs.onUpdated.addListener((id, changeInfo) => {
+  if (api.tabs?.onUpdated) {
+    api.tabs.onUpdated.addListener((id, changeInfo) => {
       if (changeInfo.status === 'complete') checkActiveTab();
     });
   }
-  chrome.runtime.onMessage.addListener((message) => {
-    if (message?.type === 'TAB_CHANGED' || message?.type === 'TAB_UPDATED') {
-      checkActiveTab();
-    }
-  });
+  if (api.runtime?.onMessage) {
+    api.runtime.onMessage.addListener((message) => {
+      if (message?.type === 'TAB_CHANGED' || message?.type === 'TAB_UPDATED') {
+        checkActiveTab();
+      }
+    });
+  }
 
   // Initial boot
   (async () => {
+    // If running in Safari or as a popup window, set popup styling
+    if (!api.sidePanel || window.innerWidth < 360) {
+      document.body.classList.add('is-popup');
+    }
+
     state = await api.storage.local.get(null);
     applyAccent(state['pf-accent-color'] || '#30d158');
     await cleanupLegacyStorage();
