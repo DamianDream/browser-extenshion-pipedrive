@@ -329,7 +329,7 @@
   }
 
   // iOS-style toggle switch creator
-  function createSwitch(id, label) {
+  function createSwitch(id, label, onToggle = null) {
     const labelWrap = document.createElement('label');
     labelWrap.className = 'ios-switch';
 
@@ -348,6 +348,9 @@
       try {
         await api.storage.local.set({ ['hidden:' + id]: isHidden });
         state['hidden:' + id] = isHidden;
+        if (onToggle) {
+          await onToggle(isHidden);
+        }
       } catch {
         input.checked = isHidden;
       }
@@ -450,7 +453,16 @@
         render();
       });
 
-      const groupSwitch = createSwitch(gid, group.label);
+      const groupSwitch = createSwitch(gid, group.label, async (isHidden) => {
+        if (group.fields && group.fields.size > 0) {
+          const updates = {};
+          for (const fid of group.fields.keys()) {
+            updates['hidden:' + fid] = isHidden;
+            state['hidden:' + fid] = isHidden;
+          }
+          await api.storage.local.set(updates);
+        }
+      });
       headerRow.append(titleWrap, groupSwitch);
       groupCard.append(headerRow);
 
