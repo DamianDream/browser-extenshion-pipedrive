@@ -24,7 +24,6 @@
   const scanLoader = document.querySelector('#scan-loader');
   const scanLoaderVideo = document.querySelector('#scan-loader-video');
   const appContainer = document.querySelector('#app-container');
-  const themeButtons = document.querySelectorAll('.theme-btn');
   const accentDots = document.querySelectorAll('.accent-dot');
 
   // Application state
@@ -37,27 +36,6 @@
   function updateStatus(text) {
     if (statusDot) statusDot.title = text;
   }
-
-  // Theme management
-  function applyTheme(theme) {
-    if (!['dark', 'light', 'mono'].includes(theme)) theme = 'dark';
-    if (appContainer) appContainer.setAttribute('data-theme', theme);
-    themeButtons.forEach(btn => {
-      if (btn.dataset.theme === theme) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-  }
-
-  themeButtons.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const selectedTheme = btn.dataset.theme;
-      applyTheme(selectedTheme);
-      try {
-        await api.storage.local.set({ 'pf-theme': selectedTheme });
-        state['pf-theme'] = selectedTheme;
-      } catch {}
-    });
-  });
 
   // Rainbow Accent management
   function applyAccent(color) {
@@ -339,6 +317,7 @@
         }
       }
     }
+    if (state['pf-theme']) toRemove.push('pf-theme');
     if (toRemove.length) {
       await api.storage.local.remove(toRemove);
       toRemove.forEach(k => delete state[k]);
@@ -547,7 +526,6 @@
   // Initial boot
   (async () => {
     state = await api.storage.local.get(null);
-    applyTheme(state['pf-theme'] || 'dark');
     applyAccent(state['pf-accent-color'] || '#0a84ff');
     await cleanupLegacyStorage();
     await checkActiveTab();
