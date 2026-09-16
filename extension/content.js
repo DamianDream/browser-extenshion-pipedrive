@@ -2,7 +2,14 @@
   const { api, key, cleanLabel } = PF;
   const host = location.hostname;
   const GROUP = '[data-testid="fields-list-group"]';
-  const PERSON = '[data-testid="person-block"]';
+  const BLOCK = [
+    '[data-testid="detail-block"]',
+    '[data-testid="person-block"]',
+    '[data-testid="organization-block"]',
+    '[data-testid="deal-block"]',
+    '[data-testid="lead-block"]',
+    '[data-testid$="-block"]'
+  ].join(', ');
   let state = {}, visibilityState = {}, timer, running = false, again = false, discoveryPending = false;
   function mark(node, hidden, virtual = false) {
     const mode = virtual ? 'virtual' : '1';
@@ -68,19 +75,46 @@
     });
     return [...rows];
   }
-  function collectPersonRows(personBlock) {
-    const rows = new Set();
-    findFieldRows(personBlock).forEach(r => rows.add(r));
 
-    const wrapper = personBlock.closest('div[data-index]') || personBlock.parentElement;
+  function extractBlockLabel(block) {
+    const title = block.querySelector(
+      '[data-testid="block-collapse"] .cui5-button__label, [data-testid="block-collapse"], [class*="Header-"] button, [data-test="accordion_header"]'
+    );
+    let text = title?.textContent.trim();
+    if (!text) {
+      const testId = block.getAttribute('data-testid') || '';
+      if (testId === 'detail-block') text = 'Докладні дані';
+      else if (testId === 'person-block') text = 'Контактна особа';
+      else if (testId === 'organization-block') text = 'Організація';
+    }
+    return cleanLabel(text);
+  }
+
+  function getValidBlocks() {
+    const allBlocks = [...document.querySelectorAll(BLOCK)].filter(b => {
+      const testId = b.getAttribute('data-testid') || '';
+      const isKnown = testId === 'detail-block' || testId === 'person-block' || testId === 'organization-block';
+      return isKnown || Boolean(b.querySelector('[data-testid="block-collapse"]'));
+    });
+    return allBlocks.filter(b => !allBlocks.some(parent => parent !== b && parent.contains(b)));
+  }
+
+  function collectBlockRows(block) {
+    const rows = new Set();
+    findFieldRows(block).forEach(r => rows.add(r));
+
+    const wrapper = block.closest('div[data-index]') || block.parentElement;
     if (wrapper && wrapper !== document.body && wrapper !== document.documentElement) {
-      let sibling = personBlock.nextElementSibling;
+      let sibling = block.nextElementSibling;
       while (sibling) {
         if (
-          sibling.matches?.(PERSON) ||
-          sibling.querySelector?.(PERSON) ||
-          sibling.matches?.('[data-testid*="organization"], [data-testid*="deal"]') ||
-          sibling.querySelector?.('[data-testid*="organization"], [data-testid*="deal"]') ||
+          sibling.matches?.(BLOCK) ||
+          sibling.querySelector?.(BLOCK) ||
+          sibling.matches?.(GROUP) ||
+          sibling.querySelector?.(GROUP) ||
+          sibling.matches?.('[data-testid*="organization"], [data-testid*="deal"], [data-testid*="detail"], [data-testid*="person"]') ||
+          sibling.querySelector?.('[data-testid*="organization"], [data-testid*="deal"], [data-testid*="detail"], [data-testid*="person"]') ||
+          sibling.querySelector?.('[data-testid="block-collapse"]') ||
           sibling.querySelector?.('[data-test="accordion_header"]')
         ) {
           break;
@@ -99,7 +133,7 @@
       const groups = document.querySelectorAll(GROUP);
       for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
-        if (group.closest(PERSON)) continue;
+        if (group.closest(BLOCK)) continue;
         const title = group.querySelector('[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"]');
         const rawLabel = title?.textContent.trim();
         const label = cleanLabel(rawLabel);
@@ -126,23 +160,23 @@
         }
       }
 
-      // 2. Process PERSON block
-      const personBlocks = document.querySelectorAll(PERSON);
-      for (let i = 0; i < personBlocks.length; i++) {
-        const group = personBlocks[i];
-        const title = group.querySelector('[data-testid="block-collapse"] .cui5-button__label, [data-testid="block-collapse"]');
-        const label = cleanLabel(title?.textContent.trim() || 'Контактна особа');
+      // 2. Process BLOCKs (detail-block, person-block, organization-block, etc.)
+      const blocks = getValidBlocks();
+      for (let i = 0; i < blocks.length; i++) {
+        const group = blocks[i];
+        const label = extractBlockLabel(group);
+        if (!label) continue;
         const groupId = key(host, label);
         const isGroupHidden = visibilityState['hidden:' + groupId] === true;
 
         const outer = group.closest('div[data-index]');
-        const target = outer && outer.querySelectorAll(PERSON).length === 1 ? outer : group;
+        const target = outer && outer.querySelectorAll(BLOCK).length === 1 ? outer : group;
         mark(target, isGroupHidden, target === outer);
         if (target !== group) {
           mark(group, isGroupHidden, false);
         }
 
-        const rows = collectPersonRows(group);
+        const rows = collectBlockRows(group);
         for (let j = 0; j < rows.length; j++) {
           const row = rows[j];
           const field = extractFieldName(row);
@@ -177,7 +211,7 @@
         if (JSON.stringify(state[catalogKey]) !== JSON.stringify(entry)) additions[catalogKey] = entry;
       }
       document.querySelectorAll(GROUP).forEach(group => {
-        if (group.closest(PERSON)) return;
+        if (group.closest(BLOCK)) return;
         const title = group.querySelector('[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"]');
         const rawLabel = title?.textContent.trim();
         const label = cleanLabel(rawLabel);
@@ -192,12 +226,12 @@
           register(fieldId, { host, group: label, field });
         });
       });
-      document.querySelectorAll(PERSON).forEach(group => {
-        const title = group.querySelector('[data-testid="block-collapse"] .cui5-button__label, [data-testid="block-collapse"]');
-        const label = cleanLabel(title?.textContent.trim() || 'Контактна особа');
+      getValidBlocks().forEach(group => {
+        const label = extractBlockLabel(group);
+        if (!label) return;
         const groupId = key(host, label);
         register(groupId, { host, group: label, field: null });
-        const rows = collectPersonRows(group);
+        const rows = collectBlockRows(group);
         rows.forEach(row => {
           const field = extractFieldName(row);
           if (!field) return;
@@ -239,7 +273,10 @@
 
   const relevant = [
     '[data-testid="fields-list-group"]',
+    '[data-testid="detail-block"]',
     '[data-testid="person-block"]',
+    '[data-testid="organization-block"]',
+    '[data-testid$="-block"]',
     '[data-testid*="field"]',
     '[data-field-key]',
     '[class*="sidebarField"]',
@@ -270,7 +307,7 @@
     await pause(70);
     await scan(true);
   }
-  async function deepDiscoverPersonFields() {
+  async function deepDiscoverBlockFields() {
     const originalX = window.scrollX;
     const originalY = window.scrollY;
     const root = document.documentElement;
@@ -278,10 +315,10 @@
     root.style.scrollBehavior = 'auto';
     try {
       const scrollers = new Set();
-      document.querySelectorAll('[data-virtuoso-scroller="true"]').forEach(s => scrollers.add(s));
-      document.querySelectorAll(`${GROUP}, ${PERSON}`).forEach(el => {
-        el.querySelectorAll('[data-virtuoso-scroller="true"]').forEach(s => scrollers.add(s));
-        const outer = el.closest('[data-virtuoso-scroller="true"]');
+      document.querySelectorAll('[data-virtuoso-scroller="true"], [data-testid="virtuoso-scroller"]').forEach(s => scrollers.add(s));
+      document.querySelectorAll(`${GROUP}, ${BLOCK}`).forEach(el => {
+        el.querySelectorAll('[data-virtuoso-scroller="true"], [data-testid="virtuoso-scroller"]').forEach(s => scrollers.add(s));
+        const outer = el.closest('[data-virtuoso-scroller="true"], [data-testid="virtuoso-scroller"]');
         if (outer) scrollers.add(outer);
         let cur = el.parentElement;
         while (cur && cur !== document.body && cur !== document.documentElement) {
@@ -346,7 +383,7 @@
     ready.then(async () => {
       const before = catalogCount();
       await scan(true);
-      await deepDiscoverPersonFields();
+      await deepDiscoverBlockFields();
       await scan(true);
       respond({ok: true, added: Math.max(0, catalogCount() - before)});
     }).catch(error => {
