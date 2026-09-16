@@ -50,7 +50,8 @@
           </div>
           <div class="brand-info">
             <div class="brand-title-wrap">
-              <h1 class="brand-title">Pipedrive Fields</h1>
+              <h1 class="brand-title" id="current-view-title">Fields</h1>
+              <span class="brand-menu-arrow" id="brand-menu-arrow" aria-hidden="true">▾</span>
               <span id="status-dot" class="status-dot" title="Ожидание Pipedrive…"></span>
             </div>
           </div>
@@ -58,6 +59,20 @@
         <div class="header-actions">
           <button id="settings-toggle" class="clean-icon-btn" aria-label="Настройки" title="Настройки" aria-expanded="false" aria-controls="settings-panel">⚙</button>
         </div>
+      </div>
+
+      <!-- Navigation Dropdown Menu -->
+      <div id="nav-dropdown" class="nav-dropdown-menu" hidden>
+        <button type="button" class="nav-menu-item active" data-view="fields">
+          <span class="nav-menu-icon">📑</span>
+          <span class="nav-menu-label">Fields</span>
+          <span class="nav-menu-check">✓</span>
+        </button>
+        <button type="button" class="nav-menu-item" data-view="history">
+          <span class="nav-menu-icon">🕒</span>
+          <span class="nav-menu-label">History</span>
+          <span class="nav-menu-check">✓</span>
+        </button>
       </div>
 
       <div id="reset-confirm" class="reset-confirm-bar" hidden>
@@ -127,17 +142,58 @@
       <input id="backup-file" type="file" accept=".json,application/json" hidden>
     </div>
 
-    <div class="search-wrapper">
-      <div class="search-inner">
-        <span class="search-icon">🔍</span>
-        <input id="search" class="search-input" type="search" placeholder="Поиск по группам и полям…" aria-label="Поиск по группам и полям">
-        <button id="search-clear" class="search-clear" aria-label="Очистить поиск">✕</button>
+    <!-- View: Fields -->
+    <div id="view-fields" class="view-panel active">
+      <div class="search-wrapper">
+        <div class="search-inner">
+          <span class="search-icon">🔍</span>
+          <input id="search" class="search-input" type="search" placeholder="Поиск по группам и полям…" aria-label="Поиск по группам и полям">
+          <button id="search-clear" class="search-clear" aria-label="Очистить поиск">✕</button>
+        </div>
+      </div>
+
+      <main id="groups"></main>
+    </div>
+
+    <!-- View: History -->
+    <div id="view-history" class="view-panel" hidden>
+      <div class="history-controls">
+        <div class="history-tabs" role="tablist">
+          <button type="button" id="tab-all" class="history-tab active" role="tab" aria-selected="true">
+            All <span id="count-all" class="tab-badge">0</span>
+          </button>
+          <button type="button" id="tab-favorites" class="history-tab" role="tab" aria-selected="false">
+            Favorites <span id="count-fav" class="tab-badge">0</span>
+          </button>
+        </div>
+        <div class="history-actions-bar">
+          <button type="button" id="btn-unique" class="btn-filter-toggle" title="Показать только уникальные сделки (по последнему визиту)">
+            <span class="filter-icon">⚡</span> Unique
+          </button>
+          <button type="button" id="btn-clear-history" class="btn-clear-history" title="Очистить историю">
+            🗑
+          </button>
+        </div>
+      </div>
+
+      <div class="search-wrapper history-search-wrapper">
+        <div class="search-inner">
+          <span class="search-icon">🔍</span>
+          <input id="history-search" class="search-input" type="search" placeholder="Поиск по сделке или номеру…" aria-label="Поиск по истории">
+          <button id="history-search-clear" class="search-clear" aria-label="Очистить поиск">✕</button>
+        </div>
+      </div>
+
+      <main id="history-list" class="history-list"></main>
+
+      <div id="history-empty" class="history-empty-state" hidden>
+        <div class="empty-icon">📁</div>
+        <div class="empty-title" id="history-empty-title">История пуста</div>
+        <div class="empty-desc" id="history-empty-desc">Открывайте сделки на странице Pipedrive — они автоматически сохранятся здесь.</div>
       </div>
     </div>
 
-    <main id="groups"></main>
-
-    <footer>Включено = видно · Применяется в реальном времени</footer>
+    <footer id="app-footer">Включено = видно · Применяется в реальном времени</footer>
   </div>
 
   <script src="shared.js"></script>

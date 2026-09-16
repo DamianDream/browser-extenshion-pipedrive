@@ -26,12 +26,37 @@
   const appContainer = document.querySelector('#app-container');
   const accentDots = document.querySelectorAll('.accent-dot');
 
+  // Navigation & Views DOM elements
+  const currentViewTitle = document.querySelector('#current-view-title');
+  const brandMenuArrow = document.querySelector('#brand-menu-arrow');
+  const navDropdown = document.querySelector('#nav-dropdown');
+  const navMenuItems = document.querySelectorAll('.nav-menu-item');
+  const viewFields = document.querySelector('#view-fields');
+  const viewHistory = document.querySelector('#view-history');
+
+  // History DOM elements
+  const tabAll = document.querySelector('#tab-all');
+  const tabFavorites = document.querySelector('#tab-favorites');
+  const countAllBadge = document.querySelector('#count-all');
+  const countFavBadge = document.querySelector('#count-fav');
+  const btnUnique = document.querySelector('#btn-unique');
+  const btnClearHistory = document.querySelector('#btn-clear-history');
+  const historySearch = document.querySelector('#history-search');
+  const historySearchClear = document.querySelector('#history-search-clear');
+  const historyList = document.querySelector('#history-list');
+  const historyEmpty = document.querySelector('#history-empty');
+  const historyEmptyTitle = document.querySelector('#history-empty-title');
+  const historyEmptyDesc = document.querySelector('#history-empty-desc');
+
   // Application state
   let state = {};
   let host = null;
   let tabId = null;
   let openGroupId = null;
   let lastRulesSnapshot = null;
+  let currentView = 'fields'; // 'fields' | 'history'
+  let historyTab = 'all'; // 'all' | 'favorites'
+  let isUniqueFilter = false;
 
   function updateStatus(text) {
     if (statusDot) statusDot.title = text;
@@ -66,14 +91,46 @@
   function setSettings(open) {
     settingsPanel.hidden = !open;
     settingsToggle.setAttribute('aria-expanded', String(open));
-    if (open) settingsToggle.classList.add('active');
-    else settingsToggle.classList.remove('active');
+    if (open) {
+      settingsToggle.classList.add('active');
+      setNavDropdown(false);
+    } else {
+      settingsToggle.classList.remove('active');
+    }
   }
+
+  // Navigation Dropdown Menu toggle
+  function setNavDropdown(open) {
+    if (!navDropdown) return;
+    navDropdown.hidden = !open;
+    if (brandLogoBtn) {
+      if (open) brandLogoBtn.classList.add('menu-open');
+      else brandLogoBtn.classList.remove('menu-open');
+    }
+  }
+
+  function toggleNavDropdown() {
+    if (!navDropdown) return;
+    setNavDropdown(navDropdown.hidden);
+  }
+
+  // Close dropdown on click outside
+  document.addEventListener('click', (event) => {
+    if (!navDropdown || navDropdown.hidden) return;
+    if (!event.target.closest('#brand-logo-btn') && !event.target.closest('#nav-dropdown')) {
+      setNavDropdown(false);
+    }
+  });
 
   settingsToggle.addEventListener('click', () => setSettings(settingsPanel.hidden));
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
+      if (!navDropdown.hidden) {
+        setNavDropdown(false);
+        event.preventDefault();
+        return;
+      }
       if (!resetModal.hidden) {
         resetModal.hidden = true;
         event.preventDefault();
@@ -125,12 +182,15 @@
     });
   }
 
-  // Brand logo purr click handler
+  // Brand logo purr click handler & menu toggle
   const brandLogoBtn = document.querySelector('#brand-logo-btn');
   let purrTimeout = null;
 
   if (brandLogoBtn) {
     brandLogoBtn.addEventListener('click', (e) => {
+      // Toggle navigation dropdown
+      toggleNavDropdown();
+
       // If clicked outside the active target anchor, trigger it programmatically
       if (!e.target.closest('.css-cat-trigger')) {
         const nextHash = location.hash === '#css-cat-motion-a' ? '#css-cat-motion-b' : '#css-cat-motion-a';
@@ -156,6 +216,7 @@
     brandLogoBtn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        toggleNavDropdown();
         const nextHash = location.hash === '#css-cat-motion-a' ? '#css-cat-motion-b' : '#css-cat-motion-a';
         const trigger = brandLogoBtn.querySelector(
           nextHash === '#css-cat-motion-a' ? '.css-cat-trigger-a' : '.css-cat-trigger-b'
@@ -526,14 +587,304 @@
     }
   }
 
+  // =========================================================================
+  // Navigation & View Switching
+  // =========================================================================
+  function switchView(viewName) {
+    currentView = viewName;
+    setNavDropdown(false);
+
+    // Update dropdown items active state
+    navMenuItems.forEach(item => {
+      if (item.dataset.view === viewName) item.classList.add('active');
+      else item.classList.remove('active');
+    });
+
+    // Update header title
+    if (currentViewTitle) {
+      currentViewTitle.textContent = viewName === 'history' ? 'History' : 'Fields';
+    }
+
+    // Toggle panels
+    if (viewName === 'history') {
+      if (viewFields) viewFields.hidden = true;
+      if (viewHistory) viewHistory.hidden = false;
+      renderHistory();
+    } else {
+      if (viewHistory) viewHistory.hidden = true;
+      if (viewFields) viewFields.hidden = false;
+      render();
+    }
+
+    // Persist active view
+    api.storage.local.set({ 'pf_active_view': viewName }).catch(() => {});
+  }
+
+  navMenuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetView = item.dataset.view;
+      if (targetView) switchView(targetView);
+    });
+  });
+
+  // =========================================================================
+  // History View Controller
+  // =========================================================================
+  function formatDealDate(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (isToday) return `Сегодня, ${timeStr}`;
+    if (isYesterday) return `Вчера, ${timeStr}`;
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}, ${timeStr}`;
+  }
+
+  function getDealHistory() {
+    return Array.isArray(state['pf_deal_history']) ? state['pf_deal_history'] : [];
+  }
+
+  function getDealFavorites() {
+    return Array.isArray(state['pf_deal_favorites']) ? state['pf_deal_favorites'] : [];
+  }
+
+  async function toggleFavorite(dealId) {
+    PFMeow.play(state['pf-sound-enabled'] !== false);
+    const favs = new Set(getDealFavorites().map(String));
+    const idStr = String(dealId);
+    if (favs.has(idStr)) {
+      favs.delete(idStr);
+    } else {
+      favs.add(idStr);
+    }
+    const newFavList = [...favs];
+    state['pf_deal_favorites'] = newFavList;
+    try {
+      await api.storage.local.set({ 'pf_deal_favorites': newFavList });
+    } catch (err) {
+      console.error('Failed to update favorites:', err);
+    }
+    renderHistory();
+  }
+
+  // History Tabs Switching
+  if (tabAll) {
+    tabAll.addEventListener('click', () => {
+      historyTab = 'all';
+      tabAll.classList.add('active');
+      tabAll.setAttribute('aria-selected', 'true');
+      if (tabFavorites) {
+        tabFavorites.classList.remove('active');
+        tabFavorites.setAttribute('aria-selected', 'false');
+      }
+      renderHistory();
+    });
+  }
+
+  if (tabFavorites) {
+    tabFavorites.addEventListener('click', () => {
+      historyTab = 'favorites';
+      tabFavorites.classList.add('active');
+      tabFavorites.setAttribute('aria-selected', 'true');
+      if (tabAll) {
+        tabAll.classList.remove('active');
+        tabAll.setAttribute('aria-selected', 'false');
+      }
+      renderHistory();
+    });
+  }
+
+  // Unique Filter Toggle
+  if (btnUnique) {
+    btnUnique.addEventListener('click', () => {
+      isUniqueFilter = !isUniqueFilter;
+      btnUnique.classList.toggle('active', isUniqueFilter);
+      renderHistory();
+    });
+  }
+
+  // History Search
+  if (historySearch) {
+    historySearch.addEventListener('input', () => {
+      if (historySearchClear) {
+        historySearchClear.style.display = historySearch.value ? 'block' : 'none';
+      }
+      renderHistory();
+    });
+  }
+
+  if (historySearchClear) {
+    historySearchClear.addEventListener('click', () => {
+      if (historySearch) {
+        historySearch.value = '';
+        historySearchClear.style.display = 'none';
+        historySearch.focus();
+        renderHistory();
+      }
+    });
+  }
+
+  // Clear History
+  if (btnClearHistory) {
+    btnClearHistory.addEventListener('click', async () => {
+      const items = getDealHistory();
+      if (!items.length) return;
+      if (!confirm('Очистить всю историю посещённых сделок?')) return;
+      try {
+        await api.storage.local.remove(['pf_deal_history']);
+        delete state['pf_deal_history'];
+        renderHistory();
+        updateStatus('История сделок очищена.');
+      } catch (err) {
+        console.error('Failed to clear history:', err);
+      }
+    });
+  }
+
+  // Render History List
+  function renderHistory() {
+    if (!historyList) return;
+    historyList.replaceChildren();
+
+    const rawHistory = getDealHistory();
+    const favSet = new Set(getDealFavorites().map(String));
+
+    // Update tab badges
+    if (countAllBadge) countAllBadge.textContent = String(rawHistory.length);
+    const favCount = rawHistory.filter(d => favSet.has(String(d.id))).length;
+    if (countFavBadge) countFavBadge.textContent = String(favCount);
+
+    let displayList = rawHistory;
+
+    // 1. Filter by Tab ("all" vs "favorites")
+    if (historyTab === 'favorites') {
+      displayList = displayList.filter(d => favSet.has(String(d.id)));
+    }
+
+    // 2. Filter by Unique (deduplicate by dealId, keep latest visit)
+    if (isUniqueFilter) {
+      const seen = new Set();
+      const uniqueItems = [];
+      for (const item of displayList) {
+        const idKey = String(item.id || item.url);
+        if (!seen.has(idKey)) {
+          seen.add(idKey);
+          uniqueItems.push(item);
+        }
+      }
+      displayList = uniqueItems;
+    }
+
+    // 3. Filter by Search Query
+    const query = normalize(historySearch ? historySearch.value : '');
+    if (query) {
+      displayList = displayList.filter(d => {
+        const titleStr = normalize(d.title || '');
+        const idStr = String(d.id || '');
+        return titleStr.includes(query) || idStr.includes(query);
+      });
+    }
+
+    // Check if list is empty
+    if (!displayList.length) {
+      if (historyEmpty) {
+        historyEmpty.hidden = false;
+        if (query) {
+          historyEmptyTitle.textContent = 'Ничего не найдено';
+          historyEmptyDesc.textContent = `По запросу «${historySearch.value}» совпадений нет.`;
+        } else if (historyTab === 'favorites') {
+          historyEmptyTitle.textContent = 'Нет избранных сделок';
+          historyEmptyDesc.textContent = 'Нажмите звёздочку ★ в истории, чтобы добавить сделку в избранное.';
+        } else {
+          historyEmptyTitle.textContent = 'История пуста';
+          historyEmptyDesc.textContent = 'Открывайте сделки на странице Pipedrive — они автоматически сохранятся здесь.';
+        }
+      }
+      return;
+    }
+
+    if (historyEmpty) historyEmpty.hidden = true;
+
+    // Render cards
+    for (const deal of displayList) {
+      const isFav = favSet.has(String(deal.id));
+      const card = document.createElement('div');
+      card.className = 'history-card';
+
+      const body = document.createElement('div');
+      body.className = 'history-card-body';
+
+      const link = document.createElement('a');
+      link.className = 'deal-link';
+      link.href = deal.url || '#';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = deal.title || (deal.id ? `Сделка #${deal.id}` : 'Сделка Pipedrive');
+      link.title = deal.title || '';
+
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'deal-date';
+      dateSpan.textContent = formatDealDate(deal.timestamp);
+
+      body.append(link, dateSpan);
+
+      const favBtn = document.createElement('button');
+      favBtn.type = 'button';
+      favBtn.className = 'btn-favorite' + (isFav ? ' active' : '');
+      favBtn.textContent = isFav ? '★' : '☆';
+      favBtn.title = isFav ? 'Удалить из избранного' : 'Добавить в избранное';
+      favBtn.setAttribute('aria-label', favBtn.title);
+
+      favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFavorite(deal.id);
+      });
+
+      card.append(body, favBtn);
+      historyList.append(card);
+    }
+  }
+
   // Storage listener for reactive sync
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
+    let shouldRenderFields = false;
+    let shouldRenderHistory = false;
+
     for (const [id, change] of Object.entries(changes)) {
       if (change.newValue === undefined) delete state[id];
       else state[id] = change.newValue;
+
+      if (id.startsWith('hidden:') || id.startsWith('catalog:')) {
+        shouldRenderFields = true;
+      }
+      if (id === 'pf_deal_history' || id === 'pf_deal_favorites') {
+        shouldRenderHistory = true;
+      }
     }
-    render();
+
+    if (shouldRenderFields && currentView === 'fields') render();
+    if (shouldRenderHistory && currentView === 'history') renderHistory();
+    // Update count badges even when in fields view
+    if (shouldRenderHistory && currentView === 'fields') {
+      const rawHistory = getDealHistory();
+      const favSet = new Set(getDealFavorites().map(String));
+      if (countAllBadge) countAllBadge.textContent = String(rawHistory.length);
+      if (countFavBadge) countFavBadge.textContent = String(rawHistory.filter(d => favSet.has(String(d.id))).length);
+    }
   });
 
   // Tab detection and activation
@@ -558,7 +909,7 @@
       statusDot.classList.remove('connected');
       statusDot.title = 'Ошибка определения активной вкладки';
     }
-    render();
+    if (currentView === 'fields') render();
   }
 
   // Listen for tab switch events
@@ -583,6 +934,15 @@
     state = await api.storage.local.get(null);
     applyAccent(state['pf-accent-color'] || '#30d158');
     await cleanupLegacyStorage();
+
+    // Restore active view if previously chosen
+    const savedView = state['pf_active_view'];
+    if (savedView === 'history' || savedView === 'fields') {
+      switchView(savedView);
+    } else {
+      switchView('fields');
+    }
+
     await checkActiveTab();
   })().catch((err) => {
     console.error('Init error:', err);

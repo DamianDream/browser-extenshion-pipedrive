@@ -425,17 +425,162 @@
       setTimeout(() => startupDiscovery.disconnect(), 60000);
     }
     applyVisibility();
-    if (!hasCatalog) scheduleDiscovery();
+    // Initialize deal visit tracker
+    checkUrlNavigation();
+
     const intervalId = setInterval(() => {
       if (!api?.runtime?.id) {
         clearInterval(intervalId);
         return;
       }
       scan(true);
+      checkUrlNavigation();
     }, 60000);
   });
   ready.catch(error => {
     if (String(error?.message || error).includes('Extension context invalidated')) return;
     console.warn('Pipedrive Fields:', error);
   });
+
+  // =========================================================================
+  // Deal Visit History Tracker (autonomous background recording)
+  // =========================================================================
+  let lastRecordedDeal = null;
+  let lastRecordedHref = '';
+
+  function extractDealInfo(urlStr) {
+    try {
+      const u = new URL(urlStr || location.href);
+      const match = u.pathname.match(/\/deal\/(\d+)/i);
+      if (match) {
+        return {
+          dealId: match[1],
+          url: u.origin + '/deal/' + match[1]
+        };
+      }
+    } catch {}
+    return null;
+  }
+
+  function extractDealTitle(dealId) {
+    const el = document.querySelector(
+      '.cui5-editable-text__box textarea, .cui5-editable-text__input, [data-testid="deal-title"] textarea, [data-testid="deal-title"], h1 textarea, h1'
+    );
+    if (el) {
+      const val = (el.value || el.getAttribute('placeholder') || el.textContent || '').trim();
+      if (val && !val.toLowerCase().includes('додати назву') && !val.toLowerCase().includes('add title')) {
+        return val;
+      }
+    }
+    if (document.title) {
+      const t = document.title.replace(/\s*[-—|•]\s*(?:Угоди|Deals|Сделки|Pipedrive).*$/i, '').trim();
+      if (t && (t.includes(dealId) || t.startsWith('#'))) return t;
+    }
+    return '#' + dealId;
+  }
+
+  async function updateDealTitleInStorage(dealId, newTitle) {
+    if (!api?.storage?.local || !newTitle || newTitle === '#' + dealId) return;
+    try {
+      const data = await api.storage.local.get('pf_deal_history');
+      const list = Array.isArray(data.pf_deal_history) ? data.pf_deal_history : [];
+      let changed = false;
+      for (let i = 0; i < Math.min(list.length, 5); i++) {
+        if (list[i].id === dealId && (list[i].title === '#' + dealId || !list[i].title)) {
+          list[i].title = newTitle;
+          changed = true;
+        }
+      }
+      if (changed) {
+        await api.storage.local.set({ pf_deal_history: list });
+      }
+    } catch {}
+  }
+
+  function pollUpgradeDealTitle(dealId, maxTries = 10) {
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      const currentTitle = extractDealTitle(dealId);
+      if (currentTitle && currentTitle !== '#' + dealId) {
+        clearInterval(interval);
+        if (lastRecordedDeal && lastRecordedDeal.dealId === dealId) {
+          lastRecordedDeal.title = currentTitle;
+        }
+        updateDealTitleInStorage(dealId, currentTitle);
+      } else if (count >= maxTries) {
+        clearInterval(interval);
+      }
+    }, 400);
+  }
+
+  async function recordDealVisit() {
+    if (!api?.storage?.local) return;
+    const dealInfo = extractDealInfo(location.href);
+    if (!dealInfo) return;
+
+    const { dealId, url } = dealInfo;
+    const now = Date.now();
+
+    if (lastRecordedDeal && lastRecordedDeal.dealId === dealId && (now - lastRecordedDeal.time < 15000)) {
+      if (lastRecordedDeal.title === '#' + dealId) {
+        const t = extractDealTitle(dealId);
+        if (t && t !== '#' + dealId) {
+          lastRecordedDeal.title = t;
+          updateDealTitleInStorage(dealId, t);
+        }
+      }
+      return;
+    }
+
+    const title = extractDealTitle(dealId);
+    lastRecordedDeal = { dealId, time: now, title };
+
+    try {
+      const data = await api.storage.local.get('pf_deal_history');
+      const history = Array.isArray(data.pf_deal_history) ? data.pf_deal_history : [];
+      const newEntry = {
+        id: dealId,
+        url,
+        title,
+        timestamp: now
+      };
+      const updated = [newEntry, ...history.slice(0, 999)];
+      await api.storage.local.set({ pf_deal_history: updated });
+
+      if (title === '#' + dealId) {
+        pollUpgradeDealTitle(dealId);
+      }
+    } catch (err) {
+      console.warn('PF recordDealVisit:', err);
+    }
+  }
+
+  function checkUrlNavigation() {
+    if (location.href !== lastRecordedHref) {
+      lastRecordedHref = location.href;
+      recordDealVisit();
+    }
+  }
+
+  // Hook SPA navigation
+  try {
+    const origPushState = history.pushState;
+    if (origPushState) {
+      history.pushState = function() {
+        origPushState.apply(this, arguments);
+        checkUrlNavigation();
+      };
+    }
+    const origReplaceState = history.replaceState;
+    if (origReplaceState) {
+      history.replaceState = function() {
+        origReplaceState.apply(this, arguments);
+        checkUrlNavigation();
+      };
+    }
+  } catch {}
+
+  window.addEventListener('popstate', checkUrlNavigation);
+  checkUrlNavigation();
 })();
