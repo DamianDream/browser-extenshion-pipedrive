@@ -688,6 +688,44 @@
     renderHistory();
   }
 
+  async function deleteHistoryRecord(deal) {
+    const list = getDealHistory();
+    const isUniqueMode = historyFilterUnique;
+    const newList = list.filter(d => {
+      if (isUniqueMode) {
+        return String(d.id) !== String(deal.id);
+      }
+      if (deal.timestamp && d.timestamp) {
+        return !(String(d.id) === String(deal.id) && d.timestamp === deal.timestamp);
+      }
+      if (d.url && deal.url) {
+        return !(String(d.id) === String(deal.id) && d.url === deal.url);
+      }
+      return String(d.id) !== String(deal.id);
+    });
+
+    state['pf_deal_history'] = newList;
+    const toSave = { 'pf_deal_history': newList };
+
+    // If no more records for this deal remain in history, remove from favorites as well
+    const remainingForDeal = newList.some(d => String(d.id) === String(deal.id));
+    if (!remainingForDeal) {
+      const favs = new Set(getDealFavorites().map(String));
+      if (favs.has(String(deal.id))) {
+        favs.delete(String(deal.id));
+        state['pf_deal_favorites'] = [...favs];
+        toSave['pf_deal_favorites'] = state['pf_deal_favorites'];
+      }
+    }
+
+    try {
+      await api.storage.local.set(toSave);
+    } catch (err) {
+      console.error('Failed to delete history record:', err);
+    }
+    renderHistory();
+  }
+
   // History Tabs Switching
   if (tabAll) {
     tabAll.addEventListener('click', () => {
@@ -867,13 +905,22 @@
       if (historyEmpty) {
         historyEmpty.hidden = false;
         if (query) {
-          historyEmptyTitle.textContent = 'Ничего не найдено';
+          if (historyEmptyTitle) {
+            historyEmptyTitle.hidden = false;
+            historyEmptyTitle.textContent = 'Ничего не найдено';
+          }
           historyEmptyDesc.textContent = `По запросу «${historySearch.value}» совпадений нет.`;
         } else if (historyTab === 'favorites') {
-          historyEmptyTitle.textContent = 'Нет избранных сделок';
+          if (historyEmptyTitle) {
+            historyEmptyTitle.hidden = false;
+            historyEmptyTitle.textContent = 'Нет избранных сделок';
+          }
           historyEmptyDesc.textContent = 'Нажмите звёздочку ★ в истории, чтобы добавить сделку в избранное.';
         } else {
-          historyEmptyTitle.textContent = 'История пуста';
+          if (historyEmptyTitle) {
+            historyEmptyTitle.hidden = true;
+            historyEmptyTitle.textContent = '';
+          }
           historyEmptyDesc.textContent = 'Открывайте сделки на странице Pipedrive — они автоматически сохранятся здесь.';
         }
       }
@@ -923,6 +970,9 @@
       metaRow.append(dateSpan);
       body.append(link, metaRow);
 
+      const actions = document.createElement('div');
+      actions.className = 'deal-actions';
+
       const favBtn = document.createElement('button');
       favBtn.type = 'button';
       favBtn.className = 'btn-favorite' + (isFav ? ' active' : '');
@@ -935,7 +985,20 @@
         toggleFavorite(deal.id);
       });
 
-      card.append(body, favBtn);
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn-delete-deal';
+      delBtn.textContent = '🗑';
+      delBtn.title = 'Удалить эту запись из истории';
+      delBtn.setAttribute('aria-label', 'Удалить эту запись из истории');
+
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await deleteHistoryRecord(deal);
+      });
+
+      actions.append(favBtn, delBtn);
+      card.append(body, actions);
       historyList.append(card);
     }
   }
