@@ -706,50 +706,47 @@
       };
 
       const targetId = getDealId(deal);
-      const isUniqueMode = Boolean(isUniqueFilter);
+      const targetTimestamp = deal.timestamp;
+      const targetUrl = deal.url;
 
-      const newList = list.filter(d => {
-        if (!d) return false;
-        if (d === deal) return false;
-        const curId = getDealId(d);
+      // Find the exact single record index to delete
+      let deleteIdx = -1;
 
-        // In unique mode, remove all instances of this deal
-        if (isUniqueMode && targetId && curId && targetId === curId) {
-          return false;
-        }
+      // 1. Match by exact timestamp AND deal id / url
+      if (targetTimestamp) {
+        deleteIdx = list.findIndex(d =>
+          d && d.timestamp === targetTimestamp &&
+          ((targetId && getDealId(d) === targetId) || (targetUrl && d.url === targetUrl))
+        );
+      }
 
-        // Match by timestamp if both have it
-        if (deal.timestamp && d.timestamp && deal.timestamp === d.timestamp) {
-          if (targetId && curId) {
-            return targetId !== curId;
-          }
-          if (deal.url && d.url) {
-            return deal.url !== d.url;
-          }
-          return false;
-        }
+      // 2. Fallback: match by timestamp only
+      if (deleteIdx === -1 && targetTimestamp) {
+        deleteIdx = list.findIndex(d => d && d.timestamp === targetTimestamp);
+      }
 
-        // Match by id and url
-        if (targetId && curId && targetId === curId) {
-          if (deal.url && d.url) {
-            return deal.url !== d.url;
-          }
-          if (!deal.timestamp && !d.timestamp) {
-            return false;
-          }
-        }
+      // 3. Fallback if no timestamp: match by deal id or url
+      if (deleteIdx === -1) {
+        deleteIdx = list.findIndex(d =>
+          d && (
+            (targetId && getDealId(d) === targetId) ||
+            (targetUrl && d.url === targetUrl)
+          )
+        );
+      }
 
-        return true;
-      });
+      if (deleteIdx !== -1) {
+        list.splice(deleteIdx, 1);
+      }
 
-      state['pf_deal_history'] = newList;
-      const toSave = { 'pf_deal_history': newList };
+      state['pf_deal_history'] = list;
+      const toSave = { 'pf_deal_history': list };
 
       // If no more records for this deal remain in history, remove from favorites as well
       const favList = Array.isArray(data.pf_deal_favorites)
         ? data.pf_deal_favorites
         : (Array.isArray(state['pf_deal_favorites']) ? state['pf_deal_favorites'] : []);
-      const remainingForDeal = targetId ? newList.some(d => getDealId(d) === targetId) : false;
+      const remainingForDeal = targetId ? list.some(d => getDealId(d) === targetId) : false;
       if (!remainingForDeal && targetId) {
         const favs = new Set(favList.map(String));
         if (favs.has(targetId)) {
