@@ -84,11 +84,13 @@ html, body {
 header {
   padding: 14px 16px 12px;
   border-bottom: 1px solid var(--border);
-  background: rgba(40, 40, 40, 0.65);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(180deg, rgba(46, 46, 48, 0.75) 0%, rgba(36, 36, 38, 0.65) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   position: sticky;
   top: 0;
   z-index: 20;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .heading-row {
@@ -250,9 +252,12 @@ header {
 
 /* ─── SETTINGS PANEL ───────────────────────────────────── */
 #settings-panel {
-  padding: 12px 16px;
-  background: rgba(30, 30, 30, 0.85);
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(34, 34, 36, 0.90) 0%, rgba(26, 26, 28, 0.94) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -522,8 +527,10 @@ header {
 .search-wrapper {
   padding: 10px 16px;
   position: relative;
-  background: rgba(40, 40, 40, 0.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(36, 36, 38, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
 }
 
 .search-inner {
@@ -543,7 +550,9 @@ header {
 .search-input {
   width: 100%;
   height: 34px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0 32px 0 32px;
@@ -552,12 +561,13 @@ header {
   font-size: 13px;
   outline: none;
   transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .search-input:focus {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.08);
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+  box-shadow: 0 0 0 2px var(--accent-bg), inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .search-input::placeholder {
@@ -625,17 +635,24 @@ main#groups {
 
 /* ─── GROUP CARD ───────────────────────────────────────── */
 .group-card {
-  background: var(--bg-card);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
   overflow: hidden;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .group-card:hover {
-  background: var(--bg-card-hover);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
   border-color: var(--border2);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
 }
 
 .group-header {
