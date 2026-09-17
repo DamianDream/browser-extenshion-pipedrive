@@ -388,8 +388,29 @@
   async function cleanupLegacyStorage() {
     const toRemove = [];
     const toSet = {};
+
+    // Identify all fields belonging to distinct subgroups
+    const subgroupFieldNorms = new Set();
+    for (const [id, val] of Object.entries(state)) {
+      if (id.startsWith('catalog:pf1:') && val && typeof val.group === 'string' && typeof val.field === 'string') {
+        const gNorm = normalize(val.group);
+        if (gNorm !== 'докладні дані' && gNorm !== 'detail' && gNorm !== 'details') {
+          subgroupFieldNorms.add(normalize(val.field));
+        }
+      }
+    }
+
     for (const [id, val] of Object.entries(state)) {
       if (id.startsWith('catalog:pf1:') && val && typeof val.group === 'string') {
+        const gNorm = normalize(val.group);
+        // If this is a detail-block field that actually belongs to a subgroup, prune it
+        if (val.field && (gNorm === 'докладні дані' || gNorm === 'detail' || gNorm === 'details') && subgroupFieldNorms.has(normalize(val.field))) {
+          toRemove.push(id);
+          const hiddenKey = 'hidden:' + id.replace('catalog:', '');
+          if (state[hiddenKey] !== undefined) toRemove.push(hiddenKey);
+          continue;
+        }
+
         const cleanedG = cleanLabel(val.group);
         const cleanedF = typeof val.field === 'string' ? cleanLabel(val.field) : null;
         const properKey = 'catalog:' + key(val.host, cleanedG, cleanedF);

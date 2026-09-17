@@ -99,9 +99,18 @@
     return allBlocks.filter(b => !allBlocks.some(parent => parent !== b && parent.contains(b)));
   }
 
+  function extractGroupLabel(group) {
+    const title = group.querySelector(
+      '[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"], [class*="accordion__item-header"] span, [class*="accordion__item-header"]'
+    );
+    return cleanLabel(title?.textContent.trim());
+  }
+
   function collectBlockRows(block) {
     const rows = new Set();
-    findFieldRows(block).forEach(r => rows.add(r));
+    findFieldRows(block).forEach(r => {
+      if (!r.closest(GROUP)) rows.add(r);
+    });
 
     const wrapper = block.closest('div[data-index]') || block.parentElement;
     if (wrapper && wrapper !== document.body && wrapper !== document.documentElement) {
@@ -119,7 +128,9 @@
         ) {
           break;
         }
-        findFieldRows(sibling).forEach(r => rows.add(r));
+        findFieldRows(sibling).forEach(r => {
+          if (!r.closest(GROUP)) rows.add(r);
+        });
         sibling = sibling.nextElementSibling;
       }
     }
@@ -129,14 +140,11 @@
   function applyVisibility() {
     if (!api?.runtime?.id) return;
     try {
-      // 1. Process GROUPs
+      // 1. Process GROUPs (including those nested inside detail-block)
       const groups = document.querySelectorAll(GROUP);
       for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
-        if (group.closest(BLOCK)) continue;
-        const title = group.querySelector('[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"]');
-        const rawLabel = title?.textContent.trim();
-        const label = cleanLabel(rawLabel);
+        const label = extractGroupLabel(group);
         if (!label) continue;
         const groupId = key(host, label);
         const isGroupHidden = visibilityState['hidden:' + groupId] === true;
@@ -163,20 +171,37 @@
       // 2. Process BLOCKs (detail-block, person-block, organization-block, etc.)
       const blocks = getValidBlocks();
       for (let i = 0; i < blocks.length; i++) {
-        const group = blocks[i];
-        const label = extractBlockLabel(group);
+        const block = blocks[i];
+        const label = extractBlockLabel(block);
         if (!label) continue;
         const groupId = key(host, label);
         const isGroupHidden = visibilityState['hidden:' + groupId] === true;
 
-        const outer = group.closest('div[data-index]');
-        const target = outer && outer.querySelectorAll(BLOCK).length === 1 ? outer : group;
-        mark(target, isGroupHidden, target === outer);
-        if (target !== group) {
-          mark(group, isGroupHidden, false);
+        const hasSubgroups = block.matches('[data-testid="detail-block"]') || Boolean(block.querySelector(GROUP));
+        const outer = block.closest('div[data-index]');
+        const target = outer && outer.querySelectorAll(BLOCK).length === 1 ? outer : block;
+
+        if (hasSubgroups) {
+          // Never hide parent detail-block container completely as it holds the virtual list with inner subgroups
+          mark(target, false, target === outer);
+          if (target !== block) {
+            mark(block, false, false);
+          }
+
+          // If the group itself is hidden, hide the block header
+          const header = block.querySelector('[data-testid="block-collapse"]')?.closest('[class*="Header-"]') ||
+                         block.querySelector('[data-testid="block-collapse"]');
+          if (header) {
+            mark(header, isGroupHidden, false);
+          }
+        } else {
+          mark(target, isGroupHidden, target === outer);
+          if (target !== block) {
+            mark(block, isGroupHidden, false);
+          }
         }
 
-        const rows = collectBlockRows(group);
+        const rows = collectBlockRows(block);
         for (let j = 0; j < rows.length; j++) {
           const row = rows[j];
           const field = extractFieldName(row);
@@ -206,15 +231,17 @@
     running = true;
     try {
       const additions = {};
+      const removals = [];
+
       function register(id, entry) {
         const catalogKey = 'catalog:' + id;
         if (JSON.stringify(state[catalogKey]) !== JSON.stringify(entry)) additions[catalogKey] = entry;
       }
+
+      const subgroupFieldNorms = new Set();
+
       document.querySelectorAll(GROUP).forEach(group => {
-        if (group.closest(BLOCK)) return;
-        const title = group.querySelector('[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"]');
-        const rawLabel = title?.textContent.trim();
-        const label = cleanLabel(rawLabel);
+        const label = extractGroupLabel(group);
         if (!label) return;
         const groupId = key(host, label);
         register(groupId, { host, group: label, field: null });
@@ -222,10 +249,12 @@
           if (row.closest(GROUP) !== group) return;
           const field = extractFieldName(row);
           if (!field) return;
+          subgroupFieldNorms.add(PF.normalize(field));
           const fieldId = key(host, label, field);
           register(fieldId, { host, group: label, field });
         });
       });
+
       getValidBlocks().forEach(group => {
         const label = extractBlockLabel(group);
         if (!label) return;
@@ -235,10 +264,37 @@
         rows.forEach(row => {
           const field = extractFieldName(row);
           if (!field) return;
+          if (subgroupFieldNorms.has(PF.normalize(field))) return;
           const fieldId = key(host, label, field);
           register(fieldId, { host, group: label, field });
         });
       });
+
+      // Clean up stale catalog entries where subgroup fields were previously attributed to detail-block
+      Object.entries(state).forEach(([k, item]) => {
+        if (!k.startsWith('catalog:pf1:') || !item || item.host !== host || !item.field) return;
+        const gNorm = PF.normalize(item.group || '');
+        if (gNorm === 'докладні дані' || gNorm === 'detail' || gNorm === 'details') {
+          if (subgroupFieldNorms.has(PF.normalize(item.field))) {
+            removals.push(k);
+            const hiddenK = 'hidden:' + k.replace('catalog:', '');
+            if (state[hiddenK] !== undefined) removals.push(hiddenK);
+          }
+        }
+      });
+
+      if (removals.length) {
+        try {
+          await api.storage.local.remove(removals);
+          removals.forEach(k => {
+            delete state[k];
+            if (k.startsWith('hidden:pf1:')) delete visibilityState[k];
+          });
+        } catch (removeErr) {
+          if (String(removeErr?.message || removeErr).includes('Extension context invalidated')) return;
+        }
+      }
+
       if (Object.keys(additions).length) {
         if (!api?.runtime?.id) return;
         try {
