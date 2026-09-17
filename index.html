@@ -383,12 +383,18 @@
       border-radius: 18px;
       width: fit-content;
       margin-top: 4px;
-      transition: border-color 0.25s ease, background 0.25s ease;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.15s ease;
     }
 
     .cat-showcase-box:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-card-hover);
+    }
+
+    .cat-showcase-box:active {
+      transform: scale(0.985);
     }
 
     .cat-hero-wrap {
@@ -1075,12 +1081,16 @@
 
     /* Interactive Jump Trigger Motion */
     #css-cat-motion-a:target ~ .css-cat .css-cat-character,
-    #css-cat-motion-b:target ~ .css-cat .css-cat-character {
+    #css-cat-motion-b:target ~ .css-cat .css-cat-character,
+    .css-cat-character.cat-jumping,
+    .css-cat:active .css-cat-character {
       animation: catJoyJump 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     #css-cat-motion-a:target ~ .css-cat .css-cat-coin,
-    #css-cat-motion-b:target ~ .css-cat .css-cat-coin {
+    #css-cat-motion-b:target ~ .css-cat .css-cat-coin,
+    .css-cat-coin.cat-jumping,
+    .css-cat:active .css-cat-coin {
       animation: catCoinSpin 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
@@ -1328,16 +1338,10 @@
         </p>
 
         <!-- Interactive Animated Mascot Widget -->
-        <div class="cat-showcase-box">
-          <div class="cat-hero-wrap" id="cat-hero-wrap" title="Нажмите, чтобы погладить котика">
-            <span id="css-cat-motion-a" class="css-cat-target" aria-hidden="true"></span>
-            <span id="css-cat-motion-b" class="css-cat-target" aria-hidden="true"></span>
-            
+        <div class="cat-showcase-box" id="cat-showcase-box" title="Кликните, чтобы котик подпрыгнул и замурлыкал">
+          <div class="cat-hero-wrap" id="cat-hero-wrap">
             <div class="css-cat">
-              <a class="css-cat-trigger css-cat-trigger-a" href="#css-cat-motion-a"
-                 aria-label="Погладить котика" title="Погладить котика"></a>
-              <a class="css-cat-trigger css-cat-trigger-b" href="#css-cat-motion-b"
-                 aria-label="Погладить котика" title="Погладить котика"></a>
+              <button type="button" class="css-cat-trigger" aria-label="Погладить котика" title="Погладить котика"></button>
 
               <div class="css-cat-shadow" aria-hidden="true"></div>
 
@@ -1546,23 +1550,41 @@
         purrAudio.volume = 0.8;
       } catch {}
 
-      // Interactive Cat Trigger Click
-      if (catWrap) {
-        catWrap.addEventListener('click', (e) => {
-          if (!e.target.closest('.css-cat-trigger')) {
-            const nextHash = location.hash === '#css-cat-motion-a' ? '#css-cat-motion-b' : '#css-cat-motion-a';
-            const trigger = catWrap.querySelector(
-              nextHash === '#css-cat-motion-a' ? '.css-cat-trigger-a' : '.css-cat-trigger-b'
-            );
-            if (trigger) trigger.click();
-          }
-          if (purrAudio) {
-            try {
-              purrAudio.currentTime = 0;
-              purrAudio.play().catch(() => {});
-            } catch {}
-          }
+      // Interactive Cat Trigger Click (unlimited clicks with instant jump restart)
+      const showcaseBox = document.getElementById('cat-showcase-box');
+      const catCharacter = catWrap?.querySelector('.css-cat-character');
+      const catCoin = catWrap?.querySelector('.css-cat-coin');
+
+      function triggerCatJump(e) {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (!catCharacter || !catCoin) return;
+
+        // Reset class and trigger synchronous layout reflow so animation restarts every single click
+        catCharacter.classList.remove('cat-jumping');
+        catCoin.classList.remove('cat-jumping');
+        void catCharacter.offsetWidth;
+        catCharacter.classList.add('cat-jumping');
+        catCoin.classList.add('cat-jumping');
+
+        if (purrAudio) {
+          try {
+            purrAudio.currentTime = 0;
+            purrAudio.play().catch(() => {});
+          } catch {}
+        }
+      }
+
+      if (catCharacter && catCoin) {
+        catCharacter.addEventListener('animationend', () => {
+          catCharacter.classList.remove('cat-jumping');
+          catCoin.classList.remove('cat-jumping');
         });
+      }
+
+      if (showcaseBox) {
+        showcaseBox.addEventListener('click', triggerCatJump);
+      } else if (catWrap) {
+        catWrap.addEventListener('click', triggerCatJump);
       }
 
       // 1. Browser Detection
