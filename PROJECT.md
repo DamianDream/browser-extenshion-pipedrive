@@ -11,7 +11,8 @@
 
 ## 2. Расположение файлов и репозитория
 
-- **Рабочий репозиторий**: `/Users/dima/Projects/pipedrive-fields/`
+- **Рабочий репозиторий**: 
+- **GitHub**: `/Users/dima/Projects/pipedrive-extenshion/`
 - **Выходной каталог (зеркало)**: `/Users/dima/Documents/Codex/2026-09-16/x20-2/outputs/pipedrive-fields/`
 
 ### Структура каталога:
