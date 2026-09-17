@@ -1490,28 +1490,23 @@
         setTimeout(() => toast.classList.remove('active'), 2500);
       }
 
-      // 4. Modal Flow for Chrome
+      // 4. Direct Install Flow for Chrome
       function openChromeInstall() {
-        triggerDownload('pipedrive-fields-chrome.zip', 'pipedrive-fields-chrome.zip');
+        // Direct browser extension package installation
+        window.location.href = 'pipedrive-fields.crx';
 
         modalTitle.textContent = 'Установка в Google Chrome';
         modalSteps.innerHTML = `
           <div class="step-item">
-            <span class="step-number">1</span>
+            <span class="step-number">✓</span>
             <div class="step-content">
-              Распакуйте только что скачанный архив <strong>pipedrive-fields-chrome.zip</strong> на компьютере.
+              <strong>Запущена прямая установка расширения.</strong> Подтвердите установку кнопкой <strong>«Добавить расширение»</strong> в системном окне браузера.
             </div>
           </div>
           <div class="step-item">
-            <span class="step-number">2</span>
+            <span class="step-number">ℹ</span>
             <div class="step-content">
-              Откройте вкладку <span class="code-chip" id="copy-chrome-url" title="Нажмите, чтобы скопировать">chrome://extensions 📋</span> и включите переключатель <strong>«Режим разработчика»</strong> в правом верхнем углу.
-            </div>
-          </div>
-          <div class="step-item">
-            <span class="step-number">3</span>
-            <div class="step-content">
-              Нажмите кнопку <strong>«Загрузить распакованное расширение»</strong> и выберите распакованную папку, либо просто перетащите её мышью на страницу расширений.
+              Если браузер заблокировал прямую установку со сторонних сайтов, откройте <span class="code-chip" id="copy-chrome-url" title="Нажмите, чтобы скопировать">chrome://extensions 📋</span> и просто перетащите файл <strong>pipedrive-fields.crx</strong> в окно браузера.
             </div>
           </div>
         `;
@@ -1525,28 +1520,26 @@
         openModal();
       }
 
-      // 5. Modal Flow for Safari
+      // 5. Direct Activation Flow for Safari
       function openSafariInstall() {
-        triggerDownload('pipedrive-fields-safari.zip', 'pipedrive-fields-safari.zip');
-
-        modalTitle.textContent = 'Установка в Apple Safari';
+        modalTitle.textContent = 'Активация в Apple Safari';
         modalSteps.innerHTML = `
           <div class="step-item">
             <span class="step-number">1</span>
             <div class="step-content">
-              Распакуйте скачанный архив <strong>pipedrive-fields-safari.zip</strong> в удобную папку.
+              В строке меню Safari откройте <strong>Настройки…</strong> (⌘,) → перейдите на вкладку <strong>Дополнения</strong>.
             </div>
           </div>
           <div class="step-item">
             <span class="step-number">2</span>
             <div class="step-content">
-              В меню Safari откройте <strong>Настройки</strong> → вкладка <strong>Дополнения</strong> → включите флажок <strong>«Показывать функции для веб-разработчиков»</strong>.
+              Включите галочку напротив <strong>«Pipedrive — видимость полей»</strong> для активации в браузере.
             </div>
           </div>
           <div class="step-item">
             <span class="step-number">3</span>
             <div class="step-content">
-              Перейдите в меню верхнего бара <strong>Разработка</strong> → <strong>«Загрузить временное расширение…»</strong> и укажите распакованную папку расширения.
+              Откройте сделку на <strong>pipedrive.com</strong> — боковая панель появится автоматически.
             </div>
           </div>
         `;
