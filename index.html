@@ -378,8 +378,8 @@
       align-items: center;
       gap: 20px;
       padding: 14px 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
+      background: #FFC500;
+      border: 1px solid #FFC500;
       border-radius: 18px;
       width: fit-content;
       margin-top: 4px;
@@ -389,8 +389,8 @@
     }
 
     .cat-showcase-box:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-card-hover);
+      background: #FFC500;
+      border-color: #d9a700;
     }
 
     .cat-showcase-box:active {
@@ -418,7 +418,7 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--text-white);
+      color: #17191c;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -427,7 +427,7 @@
     .cat-info-subtitle {
       font-size: 11px;
       font-weight: 400;
-      color: var(--text-muted);
+      color: #51400b;
       letter-spacing: 0.5px;
     }
 
@@ -778,6 +778,27 @@
       pointer-events: none;
       animation: catIdleBreathing 4.5s ease-in-out infinite;
       transform-origin: 50% 86%;
+    }
+
+    /* Detailed mascot artwork; the existing wrapper retains breathing and jumps. */
+    .css-cat-character > :not(.furry-mascot) {
+      display: none;
+    }
+
+    .furry-mascot {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .css-cat-character,
+      .css-cat-character.cat-jumping {
+        animation: none !important;
+      }
     }
 
     .css-cat-body {
@@ -1346,6 +1367,7 @@
               <div class="css-cat-shadow" aria-hidden="true"></div>
 
               <div class="css-cat-character" aria-hidden="true">
+                <img class="furry-mascot" src="mascot-black-furry.png" width="1280" height="1280" alt="" draggable="false" decoding="async">
                 <div class="css-cat-body"></div>
 
                 <div class="css-cat-head">
