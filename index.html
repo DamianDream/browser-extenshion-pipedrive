@@ -24,7 +24,7 @@
       --text-white: #ffffff;
       --text-silver: #a2a6b0;
       --text-muted: #646874;
-      --accent-green: #30d158;
+      --accent: #FFC500;
       --accent-blue: #0a84ff;
       --font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     }
@@ -501,8 +501,8 @@
     }
 
     .browser-card.detected {
-      border-color: rgba(48, 209, 88, 0.35);
-      background: rgba(48, 209, 88, 0.03);
+      border-color: var(--accent);
+      background: rgba(255, 197, 0, 0.03);
     }
 
     .detected-pill {
@@ -513,9 +513,9 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--accent-green);
-      background: #19271e;
-      border: 1px solid rgba(48, 209, 88, 0.3);
+      color: var(--accent);
+      background: #292410;
+      border: 1px solid var(--accent);
       padding: 2px 8px;
       border-radius: 8px;
     }
@@ -1251,7 +1251,7 @@
       padding: 2px 7px;
       font-family: monospace;
       font-size: 12px;
-      color: var(--accent-green);
+      color: var(--accent);
       cursor: pointer;
       user-select: all;
     }
