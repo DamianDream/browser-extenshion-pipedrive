@@ -403,10 +403,9 @@
     /* Compact Cat Card in Left Col */
     .cat-showcase-box {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       gap: 20px;
       padding: 14px 20px;
-      padding-top: 18px;
       background: #FFC500;
       border: 1px solid #FFC500;
       border-radius: 18px;
@@ -430,13 +429,13 @@
     .cat-hero-wrap {
       position: relative;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       cursor: pointer;
       user-select: none;
       flex-shrink: 0;
-      /* Pull cat upward so ~10% of it peeks above the yellow block */
-      margin-top: -14px;
+      /* Cat bottom flush with block bottom, cat overflows top ~40% */
+      margin-bottom: -14px;
     }
 
     .cat-info-text {
@@ -760,7 +759,7 @@
     }
 
     .css-cat {
-      --css-cat-size: 120px;
+      --css-cat-size: 185px;
       width: var(--css-cat-size);
       height: var(--css-cat-size);
       position: relative;
