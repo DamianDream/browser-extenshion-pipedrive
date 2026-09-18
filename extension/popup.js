@@ -27,6 +27,8 @@
   const importButton = document.querySelector('#import');
   const fileInput = document.querySelector('#backup-file');
   const soundToggle = document.querySelector('#sound-enabled');
+  const fabToggle = document.querySelector('#fab-enabled');
+  const catToggle = document.querySelector('#cat-enabled');
   const scanLoader = document.querySelector('#scan-loader');
   const scanLoaderVideo = document.querySelector('#scan-loader-video');
   function setScanning(active) {
@@ -49,6 +51,30 @@
       state['pf-sound-enabled'] = enabled;
     } catch { soundToggle.checked = !enabled; status.textContent = 'Не удалось сохранить настройку звука.'; }
     finally { soundToggle.disabled = false; }
+  });
+  fabToggle.addEventListener('change', async () => {
+    const enabled = fabToggle.checked;
+    // When FAB is disabled, also disable cat (no point showing cat without FAB)
+    fabToggle.disabled = true;
+    catToggle.disabled = true;
+    try {
+      const toSet = {'pf-deal-fab-enabled': enabled};
+      if (!enabled) toSet['pf-deal-cat-enabled'] = false;
+      await api.storage.local.set(toSet);
+      state['pf-deal-fab-enabled'] = enabled;
+      if (!enabled) { state['pf-deal-cat-enabled'] = false; catToggle.checked = false; }
+      catToggle.disabled = !enabled;
+    } catch { fabToggle.checked = !enabled; status.textContent = 'Не удалось сохранить настройку.'; }
+    finally { fabToggle.disabled = false; }
+  });
+  catToggle.addEventListener('change', async () => {
+    const enabled = catToggle.checked;
+    catToggle.disabled = true;
+    try {
+      await api.storage.local.set({'pf-deal-cat-enabled': enabled});
+      state['pf-deal-cat-enabled'] = enabled;
+    } catch { catToggle.checked = !enabled; status.textContent = 'Не удалось сохранить настройку.'; }
+    finally { catToggle.disabled = false; }
   });
   exportButton.addEventListener('click', async () => {
     exportButton.disabled = true;
@@ -172,6 +198,10 @@
   }
   function render() {
     soundToggle.checked = state['pf-sound-enabled'] !== false;
+    const fabEnabled = state['pf-deal-fab-enabled'] !== false;
+    fabToggle.checked = fabEnabled;
+    catToggle.checked = fabEnabled && state['pf-deal-cat-enabled'] !== false;
+    catToggle.disabled = !fabEnabled;
     container.replaceChildren();
     const query = normalize(search.value), groups = new Map();
     Object.entries(state).forEach(([id, item]) => {

@@ -466,6 +466,9 @@
           ensureDealFab();
         }
       }
+      if (id === 'pf-deal-cat-enabled') {
+        applyDealCatVisibility();
+      }
     }
     applyVisibility();
   });
@@ -925,6 +928,19 @@
     rightPupil = null;
   }
 
+
+  function applyDealCatVisibility() {
+    const catContainer = document.getElementById('pf-deal-cat');
+    if (!catContainer) return;
+    const visible = state['pf-deal-cat-enabled'] !== false;
+    catContainer.style.display = visible ? '' : 'none';
+    if (visible) {
+      startCatEyeTracking();
+    } else {
+      stopCatEyeTracking();
+    }
+  }
+
   function ensureDealFab() {
     if (state['pf-deal-fab-enabled'] === false) {
       removeDealFab();
@@ -948,7 +964,7 @@
       rightEyeEl = existing.querySelector('.pf-cat-eye-right');
       leftPupil = existing.querySelector('#pf-cat-pupil-left');
       rightPupil = existing.querySelector('#pf-cat-pupil-right');
-      startCatEyeTracking();
+      applyDealCatVisibility();
       return;
     }
 
@@ -1036,6 +1052,7 @@
     });
 
     document.body.appendChild(fabContainer);
+    applyDealCatVisibility();
   }
 
   function removeDealFab() {
