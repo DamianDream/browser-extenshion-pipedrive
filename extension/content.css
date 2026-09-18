@@ -24,11 +24,14 @@
    Pipedrive Deal Page Floating Action Button (FAB)
    ========================================================================== */
 #pf-deal-fab-container {
-  --pf-fab-accent: #30d158;
+  --pf-fab-accent: #FFC500;
+  --pf-fab-text: #111111;
+  --pf-fab-divider: rgba(0, 0, 0, 0.15);
+  --pf-fab-hover-overlay: rgba(0, 0, 0, 0.1);
   position: fixed !important;
   bottom: 24px !important;
   right: 24px !important;
-  z-index: 999999 !important;
+  z-index: 2147483647 !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-end !important;
@@ -36,6 +39,8 @@
   pointer-events: auto !important;
   user-select: none !important;
   line-height: normal !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 #pf-deal-fab {
@@ -43,8 +48,8 @@
   height: 52px !important;
   width: 52px !important;
   border-radius: 26px !important;
-  background-color: var(--pf-fab-accent, #30d158) !important;
-  color: #ffffff !important;
+  background-color: var(--pf-fab-accent, #FFC500) !important;
+  color: var(--pf-fab-text, #111111) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
@@ -56,10 +61,13 @@
   margin: 0 !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, transform 0.15s ease, background-color 0.25s ease !important;
 }
 
 #pf-deal-fab:hover,
+#pf-deal-fab-container:hover #pf-deal-fab,
 #pf-deal-fab.pf-expanded,
 #pf-deal-fab:focus-within {
   width: 196px !important;
@@ -80,7 +88,7 @@
   margin: 0 !important;
   border: none !important;
   background: transparent !important;
-  color: #ffffff !important;
+  color: inherit !important;
   cursor: pointer !important;
   outline: none !important;
   box-sizing: border-box !important;
@@ -95,12 +103,13 @@
   flex-shrink: 0 !important;
   font-size: 26px !important;
   font-weight: 300 !important;
-  color: #ffffff !important;
+  color: inherit !important;
   line-height: 1 !important;
   transition: transform 0.25s ease !important;
 }
 
-#pf-deal-fab:hover .pf-fab-icon {
+#pf-deal-fab:hover .pf-fab-icon,
+#pf-deal-fab-container:hover #pf-deal-fab .pf-fab-icon {
   transform: rotate(90deg) !important;
 }
 
@@ -109,7 +118,7 @@
   font-weight: 600 !important;
   letter-spacing: 0.2px !important;
   white-space: nowrap !important;
-  color: #ffffff !important;
+  color: inherit !important;
   opacity: 0 !important;
   transform: translateX(-6px) !important;
   transition: opacity 0.2s ease 0.06s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) 0.06s !important;
@@ -117,6 +126,7 @@
 }
 
 #pf-deal-fab:hover .pf-fab-label,
+#pf-deal-fab-container:hover #pf-deal-fab .pf-fab-label,
 #pf-deal-fab.pf-expanded .pf-fab-label,
 #pf-deal-fab:focus-within .pf-fab-label {
   opacity: 1 !important;
@@ -132,9 +142,9 @@
   justify-content: center !important;
   flex-shrink: 0 !important;
   border: none !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-left: 1px solid var(--pf-fab-divider, rgba(0, 0, 0, 0.15)) !important;
   background: transparent !important;
-  color: #ffffff !important;
+  color: inherit !important;
   cursor: pointer !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -145,13 +155,14 @@
 }
 
 #pf-deal-fab:hover .pf-fab-arrow-btn,
+#pf-deal-fab-container:hover #pf-deal-fab .pf-fab-arrow-btn,
 #pf-deal-fab.pf-expanded .pf-fab-arrow-btn,
 #pf-deal-fab:focus-within .pf-fab-arrow-btn {
   opacity: 0.9 !important;
 }
 
 .pf-fab-arrow-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: var(--pf-fab-hover-overlay, rgba(0, 0, 0, 0.1)) !important;
   opacity: 1 !important;
 }
 

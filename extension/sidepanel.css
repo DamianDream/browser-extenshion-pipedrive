@@ -21,9 +21,10 @@
   --text5: rgba(235, 235, 245, 0.35);
 
   /* Accents */
-  --accent: #30d158;
-  --accent-hover: #28b84c;
-  --accent-bg: rgba(48, 209, 88, 0.15);
+  --accent: #FFC500;
+  --accent-hover: #e5b100;
+  --accent-bg: rgba(255, 197, 0, 0.15);
+  --accent-contrast: #000000;
   --success: #30d158;
   --success-bg: rgba(48, 209, 88, 0.15);
   --danger: #ff453a;
@@ -168,7 +169,7 @@ header {
 #css-cat-motion-b:target ~ .css-cat .css-cat-trigger-b { display: none; }
 
 .css-cat-trigger:focus-visible {
-  outline: 2px solid var(--accent, #30d158);
+  outline: 2px solid var(--accent, #FFC500);
   outline-offset: 3px;
   border-radius: 12px;
 }
@@ -1044,8 +1045,8 @@ header {
 .action-btn.primary {
   background: var(--accent);
   border-color: transparent;
-  color: #fff;
-  font-weight: 500;
+  color: var(--accent-contrast, #000);
+  font-weight: 600;
 }
 
 .action-btn.primary:hover:not(:disabled) {
@@ -1726,12 +1727,12 @@ footer {
 
 .btn-favorite:hover {
   transform: scale(1.22);
-  color: #ffd60a;
+  color: #FFC500;
 }
 
 .btn-favorite.active {
-  color: #ffd60a;
-  text-shadow: 0 0 8px rgba(255, 214, 10, 0.45);
+  color: #FFC500;
+  text-shadow: 0 0 8px rgba(255, 197, 0, 0.45);
 }
 
 .btn-delete-deal {

@@ -9,6 +9,7 @@
   const settingsToggle = document.querySelector('#settings-toggle');
   const settingsPanel = document.querySelector('#settings-panel');
   const soundToggle = document.querySelector('#sound-enabled');
+  const fabToggle = document.querySelector('#fab-enabled');
   const soundIconDisplay = document.querySelector('#sound-icon-display');
   const resetRulesBtn = document.querySelector('#reset-rules-btn');
   const resetModal = document.querySelector('#reset-modal');
@@ -64,13 +65,25 @@
     if (statusDot) statusDot.title = text;
   }
 
+  function isColorLight(hex) {
+    if (!hex || typeof hex !== 'string') return false;
+    const c = hex.replace('#', '');
+    const num = parseInt(c.length === 3 ? c.split('').map(x => x + x).join('') : c, 16);
+    if (isNaN(num)) return false;
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return (r * 299 + g * 587 + b * 114) / 1000 > 155;
+  }
+
   // Rainbow Accent management
   function applyAccent(color) {
-    if (!color || typeof color !== 'string') color = '#30d158';
+    if (!color || typeof color !== 'string') color = '#FFC500';
     if (appContainer) {
       appContainer.style.setProperty('--accent', color);
       appContainer.style.setProperty('--accent-hover', color);
       appContainer.style.setProperty('--accent-bg', color + '26');
+      appContainer.style.setProperty('--accent-contrast', isColorLight(color) ? '#000000' : '#ffffff');
     }
     accentDots.forEach(dot => {
       if (dot.dataset.color.toLowerCase() === color.toLowerCase()) dot.classList.add('active');
@@ -172,6 +185,20 @@
   }
 
   soundToggle.addEventListener('change', () => setSoundEnabled(soundToggle.checked));
+
+  if (fabToggle) {
+    fabToggle.addEventListener('change', async () => {
+      const enabled = fabToggle.checked;
+      PFMeow.play(state['pf-sound-enabled'] !== false);
+      try {
+        await api.storage.local.set({ 'pf-deal-fab-enabled': enabled });
+        state['pf-deal-fab-enabled'] = enabled;
+        updateStatus(enabled ? 'Кнопка в сделках включена.' : 'Кнопка в сделках выключена.');
+      } catch (err) {
+        fabToggle.checked = !enabled;
+      }
+    });
+  }
 
   if (soundIconDisplay) {
     soundIconDisplay.addEventListener('click', () => {
@@ -1102,6 +1129,7 @@
         statusDot.classList.add('connected');
         statusDot.title = 'Подключено к ' + host;
         scanButton.disabled = false;
+        api.tabs.sendMessage(tabId, { type: 'pf-scan' }).catch(() => {});
       } else {
         host = null;
         tabId = null;
@@ -1150,7 +1178,8 @@
   // Initial boot
   (async () => {
     state = await api.storage.local.get(null);
-    applyAccent(state['pf-accent-color'] || '#30d158');
+    applyAccent(state['pf-accent-color'] || '#FFC500');
+    if (fabToggle) fabToggle.checked = state['pf-deal-fab-enabled'] !== false;
     await cleanupLegacyStorage();
 
     // Restore active view if previously chosen

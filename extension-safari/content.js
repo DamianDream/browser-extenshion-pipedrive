@@ -1,7 +1,12 @@
 (() => {
   const { api, key, cleanLabel } = PF;
   const host = location.hostname;
-  const GROUP = '[data-testid="fields-list-group"]';
+  const GROUP = [
+    '[data-testid="fields-list-group"]',
+    '[data-test="accordion"]',
+    '.cui5-accordion__item',
+    '[class*="fields-list-group"]'
+  ].join(', ');
   const BLOCK = [
     '[data-testid="detail-block"]',
     '[data-testid="person-block"]',
@@ -90,6 +95,31 @@
     return cleanLabel(text);
   }
 
+  function extractGroupLabel(group) {
+    if (!group) return '';
+    const title = group.querySelector(
+      '[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"] span, [data-test="accordion_header"], [class*="accordion__item-header"] span, [class*="accordion__item-header"]'
+    );
+    return cleanLabel(title?.textContent.trim());
+  }
+
+  function getValidSubgroups() {
+    const list = [];
+    document.querySelectorAll('[data-test="accordion_header"], .cui5-accordion__item-header, [class*="accordion__item-header"]').forEach(header => {
+      const g = header.closest('[data-testid="fields-list-group"]') ||
+                header.closest('.cui5-accordion__item') ||
+                header.closest('[data-test="accordion"]') ||
+                header.parentElement;
+      if (g && !list.includes(g)) list.push(g);
+    });
+    document.querySelectorAll(GROUP).forEach(el => {
+      if (extractGroupLabel(el) && !list.some(existing => existing.contains(el) || el.contains(existing))) {
+        list.push(el);
+      }
+    });
+    return list;
+  }
+
   function getValidBlocks() {
     const allBlocks = [...document.querySelectorAll(BLOCK)].filter(b => {
       const testId = b.getAttribute('data-testid') || '';
@@ -99,17 +129,12 @@
     return allBlocks.filter(b => !allBlocks.some(parent => parent !== b && parent.contains(b)));
   }
 
-  function extractGroupLabel(group) {
-    const title = group.querySelector(
-      '[data-test="accordion_header"] .cui5-accordion__item-header-content > span, [data-test="accordion_header"], [class*="accordion__item-header"] span, [class*="accordion__item-header"]'
-    );
-    return cleanLabel(title?.textContent.trim());
-  }
-
   function collectBlockRows(block) {
     const rows = new Set();
+    const subgroups = getValidSubgroups();
     findFieldRows(block).forEach(r => {
-      if (!r.closest(GROUP)) rows.add(r);
+      const insideSubgroup = subgroups.some(g => g.contains(r));
+      if (!insideSubgroup) rows.add(r);
     });
 
     const wrapper = block.closest('div[data-index]') || block.parentElement;
@@ -129,7 +154,8 @@
           break;
         }
         findFieldRows(sibling).forEach(r => {
-          if (!r.closest(GROUP)) rows.add(r);
+          const insideSubgroup = subgroups.some(g => g.contains(r));
+          if (!insideSubgroup) rows.add(r);
         });
         sibling = sibling.nextElementSibling;
       }
@@ -141,7 +167,7 @@
     if (!api?.runtime?.id) return;
     try {
       // 1. Process GROUPs (including those nested inside detail-block)
-      const groups = document.querySelectorAll(GROUP);
+      const groups = getValidSubgroups();
       for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
         const label = extractGroupLabel(group);
@@ -150,7 +176,7 @@
         const isGroupHidden = visibilityState['hidden:' + groupId] === true;
 
         const outer = group.closest('div[data-index]');
-        const target = outer && outer.querySelectorAll(GROUP).length === 1 ? outer : group;
+        const target = outer && outer.querySelectorAll('[data-test="accordion_header"]').length <= 1 ? outer : group;
         mark(target, isGroupHidden, target === outer);
         if (target !== group) {
           mark(group, isGroupHidden, false);
@@ -159,7 +185,6 @@
         const rows = findFieldRows(group);
         for (let j = 0; j < rows.length; j++) {
           const row = rows[j];
-          if (row.closest(GROUP) !== group) continue;
           const field = extractFieldName(row);
           if (!field) continue;
           const fieldId = key(host, label, field);
@@ -177,7 +202,7 @@
         const groupId = key(host, label);
         const isGroupHidden = visibilityState['hidden:' + groupId] === true;
 
-        const hasSubgroups = block.matches('[data-testid="detail-block"]') || Boolean(block.querySelector(GROUP));
+        const hasSubgroups = block.matches('[data-testid="detail-block"]') || groups.some(g => block.contains(g));
         const outer = block.closest('div[data-index]');
         const target = outer && outer.querySelectorAll(BLOCK).length === 1 ? outer : block;
 
@@ -239,14 +264,14 @@
       }
 
       const subgroupFieldNorms = new Set();
+      const subgroups = getValidSubgroups();
 
-      document.querySelectorAll(GROUP).forEach(group => {
+      subgroups.forEach(group => {
         const label = extractGroupLabel(group);
         if (!label) return;
         const groupId = key(host, label);
         register(groupId, { host, group: label, field: null });
         findFieldRows(group).forEach(row => {
-          if (row.closest(GROUP) !== group) return;
           const field = extractFieldName(row);
           if (!field) return;
           subgroupFieldNorms.add(PF.normalize(field));
@@ -379,7 +404,7 @@
         let cur = el.parentElement;
         while (cur && cur !== document.body && cur !== document.documentElement) {
           const style = getComputedStyle(cur);
-          if (/auto|scroll/.test(style.overflowY) && cur.scrollHeight > cur.clientHeight + 1) {
+          if (/auto|scroll|overlay/.test(style.overflowY || style.overflow) && cur.scrollHeight > cur.clientHeight + 1) {
             scrollers.add(cur);
             break;
           }
@@ -434,6 +459,13 @@
       if (id === 'pf-accent-color') {
         updateFabAccent(change.newValue);
       }
+      if (id === 'pf-deal-fab-enabled') {
+        if (change.newValue === false) {
+          removeDealFab();
+        } else {
+          ensureDealFab();
+        }
+      }
     }
     applyVisibility();
   });
@@ -461,13 +493,23 @@
         applyVisibility();
         scheduleDiscovery();
       }
+      if (isDealPage()) {
+        ensureDealFab();
+      }
     }).observe(document.documentElement, {
       childList: true, subtree: true, characterData: true,
       attributes: true, attributeFilter: ['data-index', 'data-testid', 'data-field-key', 'class']
     });
     window.addEventListener('scroll', () => {
       applyVisibility();
+      scheduleDiscovery();
     }, { passive: true, capture: true });
+
+    // Always schedule discovery on startup and post-render
+    scheduleDiscovery();
+    setTimeout(scheduleDiscovery, 1200);
+    setTimeout(scheduleDiscovery, 3000);
+
     const hasCatalog = Object.entries(state).some(([id, entry]) =>
       id.startsWith('catalog:pf1:') && entry?.host === host
     );
@@ -677,17 +719,41 @@
 
   function isDealPage() {
     try {
-      return PF.supported(location.href) && /^\/deal\/\d+/i.test(location.pathname);
+      if (!PF.supported(location.href)) return false;
+      const path = location.pathname || '';
+      // Matches /deal/123, /deal/123/..., /v1/deal/123, etc., but exclude /deals (pipeline/list)
+      if (/\/deal\b/i.test(path) && !/^\/deals(?:\/|$|\?)/i.test(path)) {
+        return true;
+      }
+      // DOM check: if detail-block, deal-block or deal-title is in DOM
+      if (document.querySelector('[data-testid="detail-block"], [data-testid="deal-block"], [data-testid="deal-title"]')) {
+        return true;
+      }
+      return false;
     } catch {
       return false;
     }
   }
 
+  function isColorLight(hex) {
+    if (!hex || typeof hex !== 'string') return false;
+    const c = hex.replace('#', '');
+    const num = parseInt(c.length === 3 ? c.split('').map(x => x + x).join('') : c, 16);
+    if (isNaN(num)) return false;
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return (r * 299 + g * 587 + b * 114) / 1000 > 155;
+  }
+
   function updateFabAccent(color) {
     const el = document.getElementById('pf-deal-fab-container') || fabContainer;
     if (!el) return;
-    const accent = color || state['pf-accent-color'] || '#30d158';
+    const accent = color || state['pf-accent-color'] || '#FFC500';
     el.style.setProperty('--pf-fab-accent', accent);
+    const isLight = isColorLight(accent);
+    el.style.setProperty('--pf-fab-text', isLight ? '#111111' : '#ffffff');
+    el.style.setProperty('--pf-fab-divider', isLight ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.25)');
   }
 
   function triggerOpenExtension(targetView, openSettings = false) {
@@ -722,12 +788,22 @@
   }
 
   function ensureDealFab() {
+    if (state['pf-deal-fab-enabled'] === false) {
+      removeDealFab();
+      return;
+    }
     if (!isDealPage()) {
       removeDealFab();
       return;
     }
 
-    if (document.getElementById('pf-deal-fab-container')) {
+    if (!document.body) return;
+
+    let existing = document.getElementById('pf-deal-fab-container');
+    if (existing) {
+      if (existing.parentElement !== document.body) {
+        document.body.appendChild(existing);
+      }
       updateFabAccent();
       return;
     }
@@ -819,6 +895,8 @@
     if (location.href !== lastRecordedHref) {
       lastRecordedHref = location.href;
       recordDealVisit();
+      scheduleDiscovery();
+      setTimeout(scheduleDiscovery, 1200);
     }
     ensureDealFab();
   }
@@ -844,10 +922,12 @@
   window.addEventListener('popstate', checkUrlNavigation);
   checkUrlNavigation();
 
-  // Watch for any in-page SPA URL changes that bypass history methods
+  // Watch for any in-page SPA URL changes or DOM replacements
   new MutationObserver(() => {
     if (location.href !== lastRecordedHref) {
       checkUrlNavigation();
+    } else if (isDealPage()) {
+      ensureDealFab();
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
