@@ -1138,6 +1138,11 @@
     api.runtime.onMessage.addListener((message) => {
       if (message?.type === 'TAB_CHANGED' || message?.type === 'TAB_UPDATED') {
         checkActiveTab();
+      } else if (message?.type === 'SWITCH_VIEW' && message?.view) {
+        switchView(message.view);
+        if (message.openSettings) {
+          setSettings(true);
+        }
       }
     });
   }

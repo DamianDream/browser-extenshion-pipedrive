@@ -431,6 +431,9 @@
         state[id] = change.newValue;
         if (id.startsWith('hidden:pf1:')) visibilityState[id] = change.newValue;
       }
+      if (id === 'pf-accent-color') {
+        updateFabAccent(change.newValue);
+      }
     }
     applyVisibility();
   });
@@ -666,11 +669,158 @@
     }
   }
 
+  // =========================================================================
+  // Floating Action Button (FAB) for Deal Pages
+  // =========================================================================
+  let fabContainer = null;
+  let fabDropdownOpen = false;
+
+  function isDealPage() {
+    try {
+      return PF.supported(location.href) && /^\/deal\/\d+/i.test(location.pathname);
+    } catch {
+      return false;
+    }
+  }
+
+  function updateFabAccent(color) {
+    const el = document.getElementById('pf-deal-fab-container') || fabContainer;
+    if (!el) return;
+    const accent = color || state['pf-accent-color'] || '#30d158';
+    el.style.setProperty('--pf-fab-accent', accent);
+  }
+
+  function triggerOpenExtension(targetView, openSettings = false) {
+    if (!api?.runtime?.id) return;
+    try {
+      api.runtime.sendMessage({
+        type: 'OPEN_SIDE_PANEL',
+        targetView,
+        openSettings
+      }).catch(() => {});
+    } catch {}
+  }
+
+  function setFabDropdown(open) {
+    fabDropdownOpen = open;
+    const fabEl = document.getElementById('pf-deal-fab');
+    const menuEl = document.getElementById('pf-deal-fab-menu');
+    if (fabEl) {
+      if (open) {
+        fabEl.classList.add('menu-open', 'pf-expanded');
+      } else {
+        fabEl.classList.remove('menu-open', 'pf-expanded');
+      }
+    }
+    if (menuEl) {
+      if (open) {
+        menuEl.classList.add('open');
+      } else {
+        menuEl.classList.remove('open');
+      }
+    }
+  }
+
+  function ensureDealFab() {
+    if (!isDealPage()) {
+      removeDealFab();
+      return;
+    }
+
+    if (document.getElementById('pf-deal-fab-container')) {
+      updateFabAccent();
+      return;
+    }
+
+    fabContainer = document.createElement('div');
+    fabContainer.id = 'pf-deal-fab-container';
+    updateFabAccent();
+
+    fabContainer.innerHTML = `
+      <div id="pf-deal-fab-menu" role="menu" aria-label="Меню расширения">
+        <button type="button" class="pf-fab-menu-item" data-view="history" role="menuitem">
+          <span class="pf-fab-menu-item-icon">🕒</span>
+          <span class="pf-fab-menu-item-label">История сделок</span>
+        </button>
+        <button type="button" class="pf-fab-menu-item" data-view="fields" role="menuitem">
+          <span class="pf-fab-menu-item-icon">📑</span>
+          <span class="pf-fab-menu-item-label">Видимость полей</span>
+        </button>
+        <div class="pf-fab-menu-divider" role="separator"></div>
+        <button type="button" class="pf-fab-menu-item" data-view="settings" role="menuitem">
+          <span class="pf-fab-menu-item-icon">⚙</span>
+          <span class="pf-fab-menu-item-label">Настройки</span>
+        </button>
+      </div>
+
+      <div id="pf-deal-fab" title="Deal History">
+        <button type="button" class="pf-fab-main-btn" aria-label="Открыть историю сделок">
+          <span class="pf-fab-icon">+</span>
+          <span class="pf-fab-label">Deal History</span>
+        </button>
+        <button type="button" class="pf-fab-arrow-btn" aria-label="Меню расширения" title="Меню разделов" aria-haspopup="true">
+          <svg class="pf-fab-arrow-icon" viewBox="0 0 10 6">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          </svg>
+        </button>
+      </div>
+    `;
+
+    // Main button click -> Deal History
+    const mainBtn = fabContainer.querySelector('.pf-fab-main-btn');
+    mainBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFabDropdown(false);
+      triggerOpenExtension('history');
+    });
+
+    // Arrow trigger click -> Dropdown menu toggle
+    const arrowBtn = fabContainer.querySelector('.pf-fab-arrow-btn');
+    arrowBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setFabDropdown(!fabDropdownOpen);
+    });
+
+    // Dropdown items click
+    const menuItems = fabContainer.querySelectorAll('.pf-fab-menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setFabDropdown(false);
+        const view = item.dataset.view;
+        if (view === 'settings') {
+          triggerOpenExtension('fields', true);
+        } else {
+          triggerOpenExtension(view || 'history');
+        }
+      });
+    });
+
+    document.body.appendChild(fabContainer);
+  }
+
+  function removeDealFab() {
+    const existing = document.getElementById('pf-deal-fab-container');
+    if (existing) {
+      existing.remove();
+      fabContainer = null;
+      fabDropdownOpen = false;
+    }
+  }
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (fabDropdownOpen && !e.target.closest('#pf-deal-fab-container')) {
+      setFabDropdown(false);
+    }
+  });
+
   function checkUrlNavigation() {
     if (location.href !== lastRecordedHref) {
       lastRecordedHref = location.href;
       recordDealVisit();
     }
+    ensureDealFab();
   }
 
   // Hook SPA navigation
