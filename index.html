@@ -313,22 +313,380 @@
       color: var(--text-white);
     }
 
-    /* Center Content Workspace */
-    .workspace-grid {
+    /* Center Content Workspace & Multi-View Router */
+    .workspace-main {
+      width: 100%;
+      margin: auto 0;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* Multi-View Pages inside Main Block */
+    .page-view {
+      display: none;
+      width: 100%;
+      animation: pageFadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .page-view.active {
+      display: block;
+    }
+
+    #page-home.active {
       display: grid;
       grid-template-columns: 1.15fr 0.95fr;
       gap: clamp(32px, 3.5vw, 64px);
       align-items: center;
       width: 100%;
-      margin: auto 0;
     }
 
     @media (max-width: 1023px) {
-      .workspace-grid {
+      #page-home.active {
         grid-template-columns: 1fr;
         gap: 36px;
         margin: 24px 0;
       }
+    }
+
+    @keyframes pageFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .nav-link.active {
+      color: var(--text-white);
+      position: relative;
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255, 197, 0, 0.6);
+    }
+
+    /* Guide Container */
+    .guide-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-height: calc(80vh - 140px);
+      max-height: calc(80dvh - 140px);
+      overflow-y: auto;
+      padding-right: 6px;
+      padding-top: 2px;
+    }
+
+    @media (max-width: 1023px), (max-height: 639px) {
+      .guide-container {
+        max-height: none;
+        overflow-y: visible;
+        padding-right: 0;
+      }
+    }
+
+    .guide-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .guide-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+    }
+    .guide-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 4px;
+    }
+    .guide-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    /* Guide Topbar */
+    .guide-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 20px;
+      padding: 7px 16px;
+      color: var(--text-silver);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.10);
+      color: var(--text-white);
+      border-color: rgba(255, 255, 255, 0.22);
+      transform: translateX(-3px);
+    }
+
+    .guide-switch-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .guide-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 6px 14px;
+      color: var(--text-silver);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .guide-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-white);
+    }
+
+    .guide-tab-btn.active {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.24);
+      color: var(--text-white);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Guide Content Grid */
+    .guide-content-grid {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1023px) {
+      .guide-content-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    /* Sidebar / Info Card */
+    .guide-sidebar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .guide-browser-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .guide-browser-name {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--text-white);
+      text-transform: uppercase;
+    }
+
+    .guide-browser-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .guide-sidebar-desc {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--text-silver);
+    }
+
+    .guide-downloads {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-download-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #111111;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      box-shadow: 0 4px 18px rgba(255, 197, 0, 0.22);
+      transition: all 0.2s ease;
+    }
+
+    .btn-download-primary:hover {
+      background: #ffd533;
+      box-shadow: 0 6px 24px rgba(255, 197, 0, 0.38);
+      transform: translateY(-1px);
+    }
+
+    .btn-download-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 9px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text-silver);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-download-secondary:hover {
+      background: rgba(255, 255, 255, 0.09);
+      color: var(--text-white);
+      border-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .guide-note {
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: auto;
+    }
+
+    .guide-note strong {
+      color: var(--text-silver);
+    }
+
+    /* Steps Card */
+    .guide-steps-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .guide-steps-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-white);
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .step-header-text {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 3px;
+    }
+
+    .step-desc {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--text-silver);
+    }
+
+    .step-desc strong {
+      color: var(--text-white);
+      font-weight: 600;
+    }
+
+    .step-code-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+
+    .copyable-chip {
+      cursor: pointer;
+      user-select: all;
+      transition: all 0.2s ease;
+    }
+
+    .copyable-chip:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .step-link {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    .step-link:hover {
+      color: #ffd533;
+    }
+
+    .kbd-chip {
+      display: inline-block;
+      padding: 1px 7px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-white);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     /* Left Hero Column */
@@ -1373,7 +1731,7 @@
 
       <nav>
         <ul class="nav-links">
-          <li><a href="#features" class="nav-link">PREVIEWS</a></li>
+          <li><a href="#features" class="nav-link active" id="nav-previews">PREVIEWS</a></li>
           <li><a href="#chrome" class="nav-link" id="nav-chrome">CHROME</a></li>
           <li><a href="#safari" class="nav-link" id="nav-safari">SAFARI</a></li>
           <li><a href="https://github.com/DamianDream/browser-extenshion-pipedrive" target="_blank" rel="noopener" class="nav-link">GITHUB</a></li>
@@ -1381,170 +1739,380 @@
       </nav>
     </header>
 
-    <!-- Center Workspace: 2-Column Split -->
-    <main class="workspace-grid">
+    <!-- Center Workspace: Multi-View Pages inside Main Block -->
+    <main class="workspace-main" id="main-content">
 
-      <!-- Left Column: Hero Title + Description + Animated Cat -->
-      <section class="hero-col">
-        <div class="hero-kicker-wrap">
-          <span class="hero-kicker">A SPECIAL CRM EXTENSION</span>
-        </div>
+      <!-- View 1: Main Overview (Hero + Download Cards) -->
+      <div class="page-view active" id="page-home">
 
-        <div class="hero-title-block">
-          <h1 class="hero-title-main">PIPEDRIVE</h1>
-          <div class="hero-title-sub-row">
-            <span class="hero-title-accent">FIELDS</span>
+        <!-- Left Column: Hero Title + Description + Animated Cat -->
+        <section class="hero-col">
+          <div class="hero-kicker-wrap">
+            <span class="hero-kicker">A SPECIAL CRM EXTENSION</span>
           </div>
-        </div>
 
-        <p class="hero-desc">
-          Элегантное решение для быстрой работы в CRM. Автоматическое скрытие неиспользуемых полей без скачков скролла и встроенная автономная история последних 10 000 сделок с умным поиском.
-        </p>
+          <div class="hero-title-block">
+            <h1 class="hero-title-main">PIPEDRIVE</h1>
+            <div class="hero-title-sub-row">
+              <span class="hero-title-accent">FIELDS</span>
+            </div>
+          </div>
 
-        <!-- Interactive Animated Mascot Widget: two separate layers -->
-        <div class="cat-widget-wrap" id="cat-showcase-box" title="Кликните, чтобы котик подпрыгнул и замурлыкал">
+          <p class="hero-desc">
+            Элегантное решение для быстрой работы в CRM. Автоматическое скрытие неиспользуемых полей без скачков скролла и встроенная автономная история последних 10 000 сделок с умным поиском.
+          </p>
 
-          <!-- Layer 1: Cat (absolute, sits on top of yellow block) -->
-          <div class="cat-hero-wrap" id="cat-hero-wrap">
-            <div class="css-cat">
-              <button type="button" class="css-cat-trigger" aria-label="Погладить котика" title="Погладить котика"></button>
+          <!-- Interactive Animated Mascot Widget: two separate layers -->
+          <div class="cat-widget-wrap" id="cat-showcase-box" title="Кликните, чтобы котик подпрыгнул и замурлыкал">
 
-              <div class="css-cat-shadow" aria-hidden="true"></div>
+            <!-- Layer 1: Cat (absolute, sits on top of yellow block) -->
+            <div class="cat-hero-wrap" id="cat-hero-wrap">
+              <div class="css-cat">
+                <button type="button" class="css-cat-trigger" aria-label="Погладить котика" title="Погладить котика"></button>
 
-              <div class="css-cat-character" aria-hidden="true">
-                <img class="furry-mascot" src="mascot-black-furry.png" width="1280" height="1280" alt="" draggable="false" decoding="async">
-                <div class="css-cat-body"></div>
+                <div class="css-cat-shadow" aria-hidden="true"></div>
 
-                <div class="css-cat-head">
-                  <i class="css-cat-ear css-cat-ear-left"></i>
-                  <i class="css-cat-ear css-cat-ear-right"></i>
+                <div class="css-cat-character" aria-hidden="true">
+                  <img class="furry-mascot" src="mascot-black-furry.png" width="1280" height="1280" alt="" draggable="false" decoding="async">
+                  <div class="css-cat-body"></div>
 
-                  <div class="css-cat-face">
-                    <i class="css-cat-eye css-cat-eye-left"></i>
-                    <i class="css-cat-eye css-cat-eye-right"></i>
-                    <i class="css-cat-nose"></i>
-                    <i class="css-cat-mouth"></i>
-                    <i class="css-cat-whiskers css-cat-whiskers-left"></i>
-                    <i class="css-cat-whiskers css-cat-whiskers-right"></i>
+                  <div class="css-cat-head">
+                    <i class="css-cat-ear css-cat-ear-left"></i>
+                    <i class="css-cat-ear css-cat-ear-right"></i>
+
+                    <div class="css-cat-face">
+                      <i class="css-cat-eye css-cat-eye-left"></i>
+                      <i class="css-cat-eye css-cat-eye-right"></i>
+                      <i class="css-cat-nose"></i>
+                      <i class="css-cat-mouth"></i>
+                      <i class="css-cat-whiskers css-cat-whiskers-left"></i>
+                      <i class="css-cat-whiskers css-cat-whiskers-right"></i>
+                    </div>
+                  </div>
+
+                  <div class="css-cat-coin">
+                    <i class="css-cat-coin-face"></i>
+                    <b class="css-cat-dollar">$</b>
+                    <i class="css-cat-shine"></i>
+                  </div>
+
+                  <i class="css-cat-paw css-cat-paw-left"></i>
+                  <i class="css-cat-paw css-cat-paw-right"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Layer 2: Yellow block (compact, text only) -->
+            <div class="cat-showcase-box">
+              <div class="cat-info-text">
+                <div class="cat-info-title">Интерактивный маскот 🐾</div>
+                <div class="cat-info-subtitle">Кликните, чтобы разбудить котика и услышать мурлыканье</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Metric Badges -->
+          <div class="metrics-row" id="features">
+            <div class="metric-item">
+              <span class="metric-val">0 px</span>
+              <span class="metric-label">Сдвиг Layout</span>
+            </div>
+            <div class="metric-item" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 20px;">
+              <span class="metric-val">10 000</span>
+              <span class="metric-label">Кеш сделок</span>
+            </div>
+            <div class="metric-item" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 20px;">
+              <span class="metric-val">100%</span>
+              <span class="metric-label">Glassmorphism</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Right Column: Browser Download Cards -->
+        <section class="download-col">
+          <span class="download-header">CHOOSE YOUR PLATFORM</span>
+
+          <div class="cards-stack">
+
+            <!-- Google Chrome Card -->
+            <div class="browser-card" id="card-chrome">
+              <div class="detected-pill" id="badge-chrome" style="display: none;">Ваш браузер</div>
+
+              <div class="browser-left">
+                <div class="browser-icon-box">
+                  <svg viewBox="0 0 48 48">
+                    <path fill="#4caf50" d="M24 4C14.7 4 7 10.5 4.9 19.3L15.3 25.3C16.3 19.8 21.1 16 26.8 16H42.7C39 8.8 32.1 4 24 4Z"/>
+                    <path fill="#ffeb3b" d="M42.7 16H26.8C24.4 16 22.2 16.9 20.6 18.3L10.2 12.3C13.8 7.2 19.6 4 26.2 4C34.3 4 41.2 8.8 44.9 16H42.7Z" opacity="0.01"/>
+                    <path fill="#fbc02d" d="M43.6 18.2C43.9 20.1 44 22 44 24C44 35 35 44 24 44C21.8 44 19.7 43.6 17.8 43L24.5 31.4C24.9 31.5 25.4 31.5 25.9 31.5C29.6 31.5 32.7 29.1 33.7 25.7L43.6 18.2Z"/>
+                    <path fill="#e53935" d="M4.9 19.3C4.3 20.8 4 22.4 4 24C4 33.4 10.6 41.3 19.5 43.4L26.2 31.8C22.6 31.8 19.4 29.5 18 26.3L4.9 19.3Z"/>
+                    <circle fill="#f5f5f5" cx="24" cy="24" r="10"/>
+                    <circle fill="#1976d2" cx="24" cy="24" r="8"/>
+                  </svg>
+                </div>
+
+                <div class="browser-details">
+                  <h2 class="browser-name">GOOGLE CHROME</h2>
+                  <p class="browser-meta">Native Side Panel · Версия 116+</p>
+                </div>
+              </div>
+
+              <div class="browser-actions">
+                <button type="button" class="glass-btn" id="btn-install-chrome">
+                  Установить
+                </button>
+              </div>
+            </div>
+
+            <!-- Apple Safari Card -->
+            <div class="browser-card" id="card-safari">
+              <div class="detected-pill" id="badge-safari" style="display: none;">Ваш браузер</div>
+
+              <div class="browser-left">
+                <div class="browser-icon-box">
+                  <svg viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="21" fill="#007aff"/>
+                    <circle cx="24" cy="24" r="19" fill="#0a84ff"/>
+                    <circle cx="24" cy="24" r="17.5" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.8"/>
+                    <polygon points="24,7 28,24 24,24" fill="#ff3b30"/>
+                    <polygon points="24,7 20,24 24,24" fill="#ff453a"/>
+                    <polygon points="24,41 28,24 24,24" fill="#f2f2f7"/>
+                    <polygon points="24,41 20,24 24,24" fill="#ffffff"/>
+                    <circle cx="24" cy="24" r="2.5" fill="#ffffff"/>
+                  </svg>
+                </div>
+
+                <div class="browser-details">
+                  <h2 class="browser-name">APPLE SAFARI</h2>
+                  <p class="browser-meta">Web Extension · macOS Safari 17+</p>
+                </div>
+              </div>
+
+              <div class="browser-actions">
+                <button type="button" class="glass-btn" id="btn-install-safari">
+                  Установить
+                </button>
+              </div>
+            </div>
+
+            <!-- Universal Zip Option -->
+            <div class="universal-row">
+              <span>Универсальный исходный пакет расширения</span>
+              <a href="pipedrive-fields.zip" download="pipedrive-fields.zip" class="universal-link">
+                Скачать .ZIP →
+              </a>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- View 2: Google Chrome In-Place Guide -->
+      <div class="page-view" id="page-chrome">
+        <div class="guide-container">
+          <div class="guide-topbar">
+            <button type="button" class="btn-back" data-target="home">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Назад на главную</span>
+            </button>
+            <div class="guide-switch-tabs">
+              <button type="button" class="guide-tab-btn active" data-target="chrome">Google Chrome</button>
+              <button type="button" class="guide-tab-btn" data-target="safari">Apple Safari</button>
+            </div>
+          </div>
+
+          <div class="guide-content-grid">
+            <aside class="guide-sidebar">
+              <div class="guide-browser-badge">
+                <div class="browser-icon-box">
+                  <svg viewBox="0 0 48 48">
+                    <path fill="#4caf50" d="M24 4C14.7 4 7 10.5 4.9 19.3L15.3 25.3C16.3 19.8 21.1 16 26.8 16H42.7C39 8.8 32.1 4 24 4Z"/>
+                    <path fill="#ffeb3b" d="M42.7 16H26.8C24.4 16 22.2 16.9 20.6 18.3L10.2 12.3C13.8 7.2 19.6 4 26.2 4C34.3 4 41.2 8.8 44.9 16H42.7Z" opacity="0.01"/>
+                    <path fill="#fbc02d" d="M43.6 18.2C43.9 20.1 44 22 44 24C44 35 35 44 24 44C21.8 44 19.7 43.6 17.8 43L24.5 31.4C24.9 31.5 25.4 31.5 25.9 31.5C29.6 31.5 32.7 29.1 33.7 25.7L43.6 18.2Z"/>
+                    <path fill="#e53935" d="M4.9 19.3C4.3 20.8 4 22.4 4 24C4 33.4 10.6 41.3 19.5 43.4L26.2 31.8C22.6 31.8 19.4 29.5 18 26.3L4.9 19.3Z"/>
+                    <circle fill="#f5f5f5" cx="24" cy="24" r="10"/>
+                    <circle fill="#1976d2" cx="24" cy="24" r="8"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="guide-browser-name">GOOGLE CHROME</h2>
+                  <p class="guide-browser-meta">Native Side Panel · Chrome 116+</p>
+                </div>
+              </div>
+
+              <p class="guide-sidebar-desc">
+                Полнофункциональное расширение с боковой панелью Pipedrive, умным каталогом полей, скрытием пустых блоков и локальной историей 10 000 сделок.
+              </p>
+
+              <div class="guide-downloads">
+                <a href="pipedrive-fields-chrome.zip" download="pipedrive-fields-chrome.zip" class="btn-download-primary">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Скачать .ZIP архив</span>
+                </a>
+                <a href="pipedrive-fields.crx" download="pipedrive-fields.crx" class="btn-download-secondary">
+                  <span>Скачать .CRX пакет</span>
+                </a>
+              </div>
+
+              <div class="guide-note">
+                💡 <strong>Быстрая установка</strong>: распакуйте zip и перетащите папку прямо на вкладку <code>chrome://extensions</code>.
+              </div>
+            </aside>
+
+            <section class="guide-steps-card">
+              <h3 class="guide-steps-title">Пошаговая инструкция по установке</h3>
+
+              <div class="steps-list">
+                <div class="step-item">
+                  <span class="step-number">1</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Скачайте и распакуйте архив</div>
+                    <div class="step-desc">
+                      Нажмите кнопку «Скачать .ZIP архив» или воспользуйтесь ссылкой <a href="pipedrive-fields-chrome.zip" download class="step-link">pipedrive-fields-chrome.zip</a>. Распакуйте архив в любую удобную папку на компьютере (например, в «Загрузки»). Внутри будет папка <code>extension</code>.
+                    </div>
                   </div>
                 </div>
 
-                <div class="css-cat-coin">
-                  <i class="css-cat-coin-face"></i>
-                  <b class="css-cat-dollar">$</b>
-                  <i class="css-cat-shine"></i>
+                <div class="step-item">
+                  <span class="step-number">2</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Откройте страницу расширений Chrome</div>
+                    <div class="step-desc">
+                      Вставьте в адресную строку браузера Chrome адрес:
+                      <div class="step-code-row">
+                        <span class="code-chip copyable-chip" data-copy="chrome://extensions" title="Нажмите, чтобы скопировать">chrome://extensions 📋</span>
+                      </div>
+                      В правом верхнем углу открывшейся страницы включите переключатель <strong>«Режим разработчика»</strong> (Developer mode).
+                    </div>
+                  </div>
                 </div>
 
-                <i class="css-cat-paw css-cat-paw-left"></i>
-                <i class="css-cat-paw css-cat-paw-right"></i>
+                <div class="step-item">
+                  <span class="step-number">3</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Загрузите папку с расширением</div>
+                    <div class="step-desc">
+                      В верхнем левом углу нажмите кнопку <strong>«Загрузить распакованное расширение»</strong> (Load unpacked) и выберите распакованную папку <code>extension</code>. Либо просто <strong>перетащите мышью</strong> папку прямо в окно браузера на страницу расширений.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-number">4</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Закрепите расширение и начните работу</div>
+                    <div class="step-desc">
+                      Нажмите значок пазла (Расширения) на панели инструментов Chrome и закрепите булавкой 📌 <strong>Pipedrive Fields</strong>. Откройте любую сделку в Pipedrive — умная кнопка с живым котиком-маскотом появится в нижнем правом углу!
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Layer 2: Yellow block (compact, text only) -->
-          <div class="cat-showcase-box">
-            <div class="cat-info-text">
-              <div class="cat-info-title">Интерактивный маскот 🐾</div>
-              <div class="cat-info-subtitle">Кликните, чтобы разбудить котика и услышать мурлыканье</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Metric Badges -->
-        <div class="metrics-row" id="features">
-          <div class="metric-item">
-            <span class="metric-val">0 px</span>
-            <span class="metric-label">Сдвиг Layout</span>
-          </div>
-          <div class="metric-item" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 20px;">
-            <span class="metric-val">10 000</span>
-            <span class="metric-label">Кеш сделок</span>
-          </div>
-          <div class="metric-item" style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 20px;">
-            <span class="metric-val">100%</span>
-            <span class="metric-label">Glassmorphism</span>
+            </section>
           </div>
         </div>
+      </div>
 
-      </section>
-
-      <!-- Right Column: Browser Download Cards -->
-      <section class="download-col">
-        <span class="download-header">CHOOSE YOUR PLATFORM</span>
-
-        <div class="cards-stack">
-
-          <!-- Google Chrome Card -->
-          <div class="browser-card" id="card-chrome">
-            <div class="detected-pill" id="badge-chrome" style="display: none;">Ваш браузер</div>
-
-            <div class="browser-left">
-              <div class="browser-icon-box">
-                <svg viewBox="0 0 48 48">
-                  <path fill="#4caf50" d="M24 4C14.7 4 7 10.5 4.9 19.3L15.3 25.3C16.3 19.8 21.1 16 26.8 16H42.7C39 8.8 32.1 4 24 4Z"/>
-                  <path fill="#ffeb3b" d="M42.7 16H26.8C24.4 16 22.2 16.9 20.6 18.3L10.2 12.3C13.8 7.2 19.6 4 26.2 4C34.3 4 41.2 8.8 44.9 16H42.7Z" opacity="0.01"/>
-                  <path fill="#fbc02d" d="M43.6 18.2C43.9 20.1 44 22 44 24C44 35 35 44 24 44C21.8 44 19.7 43.6 17.8 43L24.5 31.4C24.9 31.5 25.4 31.5 25.9 31.5C29.6 31.5 32.7 29.1 33.7 25.7L43.6 18.2Z"/>
-                  <path fill="#e53935" d="M4.9 19.3C4.3 20.8 4 22.4 4 24C4 33.4 10.6 41.3 19.5 43.4L26.2 31.8C22.6 31.8 19.4 29.5 18 26.3L4.9 19.3Z"/>
-                  <circle fill="#f5f5f5" cx="24" cy="24" r="10"/>
-                  <circle fill="#1976d2" cx="24" cy="24" r="8"/>
-                </svg>
-              </div>
-
-              <div class="browser-details">
-                <h2 class="browser-name">GOOGLE CHROME</h2>
-                <p class="browser-meta">Native Side Panel · Версия 116+</p>
-              </div>
-            </div>
-
-            <div class="browser-actions">
-              <button type="button" class="glass-btn" id="btn-install-chrome">
-                Установить
-              </button>
+      <!-- View 3: Apple Safari In-Place Guide -->
+      <div class="page-view" id="page-safari">
+        <div class="guide-container">
+          <div class="guide-topbar">
+            <button type="button" class="btn-back" data-target="home">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Назад на главную</span>
+            </button>
+            <div class="guide-switch-tabs">
+              <button type="button" class="guide-tab-btn" data-target="chrome">Google Chrome</button>
+              <button type="button" class="guide-tab-btn active" data-target="safari">Apple Safari</button>
             </div>
           </div>
 
-          <!-- Apple Safari Card -->
-          <div class="browser-card" id="card-safari">
-            <div class="detected-pill" id="badge-safari" style="display: none;">Ваш браузер</div>
-
-            <div class="browser-left">
-              <div class="browser-icon-box">
-                <svg viewBox="0 0 48 48">
-                  <circle cx="24" cy="24" r="21" fill="#007aff"/>
-                  <circle cx="24" cy="24" r="19" fill="#0a84ff"/>
-                  <circle cx="24" cy="24" r="17.5" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.8"/>
-                  <polygon points="24,7 28,24 24,24" fill="#ff3b30"/>
-                  <polygon points="24,7 20,24 24,24" fill="#ff453a"/>
-                  <polygon points="24,41 28,24 24,24" fill="#f2f2f7"/>
-                  <polygon points="24,41 20,24 24,24" fill="#ffffff"/>
-                  <circle cx="24" cy="24" r="2.5" fill="#ffffff"/>
-                </svg>
+          <div class="guide-content-grid">
+            <aside class="guide-sidebar">
+              <div class="guide-browser-badge">
+                <div class="browser-icon-box">
+                  <svg viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="21" fill="#007aff"/>
+                    <circle cx="24" cy="24" r="19" fill="#0a84ff"/>
+                    <circle cx="24" cy="24" r="17.5" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="2 3" opacity="0.8"/>
+                    <polygon points="24,7 28,24 24,24" fill="#ff3b30"/>
+                    <polygon points="24,7 20,24 24,24" fill="#ff453a"/>
+                    <polygon points="24,41 28,24 24,24" fill="#f2f2f7"/>
+                    <polygon points="24,41 20,24 24,24" fill="#ffffff"/>
+                    <circle cx="24" cy="24" r="2.5" fill="#ffffff"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="guide-browser-name">APPLE SAFARI</h2>
+                  <p class="guide-browser-meta">Web Extension · macOS Safari 17+</p>
+                </div>
               </div>
 
-              <div class="browser-details">
-                <h2 class="browser-name">APPLE SAFARI</h2>
-                <p class="browser-meta">Web Extension · macOS Safari 17+</p>
+              <p class="guide-sidebar-desc">
+                Нативное расширение Safari для macOS: глассморфизм, поддержка темного режима, управление видимостью полей сделок и звуковые эффекты.
+              </p>
+
+              <div class="guide-downloads">
+                <a href="pipedrive-fields-safari.zip" download="pipedrive-fields-safari.zip" class="btn-download-primary">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Скачать .ZIP архив</span>
+                </a>
               </div>
-            </div>
 
-            <div class="browser-actions">
-              <button type="button" class="glass-btn" id="btn-install-safari">
-                Установить
-              </button>
-            </div>
+              <div class="guide-note">
+                💡 <strong>Системные требования</strong>: macOS Sonoma, Ventura или Sequoia с браузером Safari 17+.
+              </div>
+            </aside>
+
+            <section class="guide-steps-card">
+              <h3 class="guide-steps-title">Пошаговая инструкция по установке</h3>
+
+              <div class="steps-list">
+                <div class="step-item">
+                  <span class="step-number">1</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Скачайте и распакуйте архив</div>
+                    <div class="step-desc">
+                      Нажмите кнопку «Скачать .ZIP архив» или прямую ссылку <a href="pipedrive-fields-safari.zip" download class="step-link">pipedrive-fields-safari.zip</a>. Распакуйте архив на вашем Mac — внутри находится папка <code>extension-safari</code>.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-number">2</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Включите меню разработчика в Safari</div>
+                    <div class="step-desc">
+                      В верхнем меню Safari откройте <strong>Safari → Настройки…</strong> (горячие клавиши <kbd class="kbd-chip">⌘ ,</kbd>). Перейдите на вкладку <strong>Дополнения</strong> (Advanced) и отметьте пункт <strong>«Показывать функции для веб-разработчиков»</strong> (Show features for web developers).
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-number">3</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Разрешите неподписанные расширения</div>
+                    <div class="step-desc">
+                      В верхнем системном меню macOS выберите появившийся пункт <strong>Разработка</strong> (Develop) → отметьте <strong>«Разрешить неподписанные расширения»</strong> (Allow Unsigned Extensions) и подтвердите паролем администратора или Touch ID.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-item">
+                  <span class="step-number">4</span>
+                  <div class="step-content">
+                    <div class="step-header-text">Загрузите временное расширение</div>
+                    <div class="step-desc">
+                      В меню <strong>Разработка</strong> выберите пункт <strong>«Загрузить временное расширение…»</strong> и укажите распакованную папку <code>extension-safari</code>. Перейдите в <strong>Safari → Настройки… → Расширения</strong> и убедитесь, что флажок напротив <strong>Pipedrive Fields</strong> включён. Готово!
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
-
-          <!-- Universal Zip Option -->
-          <div class="universal-row">
-            <span>Универсальный исходный пакет расширения</span>
-            <a href="pipedrive-fields.zip" download="pipedrive-fields.zip" class="universal-link">
-              Скачать .ZIP →
-            </a>
-          </div>
-
         </div>
-      </section>
+      </div>
 
     </main>
 
@@ -1606,11 +2174,6 @@
       const btnInstallSafari = document.getElementById('btn-install-safari');
       const navChrome = document.getElementById('nav-chrome');
       const navSafari = document.getElementById('nav-safari');
-      const modal = document.getElementById('install-modal');
-      const modalTitle = document.getElementById('modal-browser-title');
-      const modalSteps = document.getElementById('modal-steps');
-      const modalClose = document.getElementById('modal-close-btn');
-      const modalDone = document.getElementById('modal-done-btn');
       const toast = document.getElementById('toast');
       const catWrap = document.getElementById('cat-hero-wrap');
 
@@ -1688,96 +2251,130 @@
         setTimeout(() => toast.classList.remove('active'), 2500);
       }
 
-      // 4. Manual Install Flow for Chrome
-      function openChromeInstall() {
-        triggerDownload('pipedrive-fields-chrome.zip', 'pipedrive-fields-chrome.zip');
+      // Multi-View Page Router (Home, Chrome, Safari)
+      const pageHome = document.getElementById('page-home');
+      const pageChrome = document.getElementById('page-chrome');
+      const pageSafari = document.getElementById('page-safari');
+      const navPreviews = document.getElementById('nav-previews');
+      const slideNumber = document.querySelector('.slide-number');
+      const indicatorText = document.querySelector('.bottom-right-indicator span:first-child');
 
-        modalTitle.textContent = 'Установка в Google Chrome';
-        modalSteps.innerHTML = `
-          <div class="step-item">
-            <span class="step-number">1</span>
-            <div class="step-content">
-              Распакуйте только что скачанный архив <strong>pipedrive-fields-chrome.zip</strong> на компьютере.
-            </div>
-          </div>
-          <div class="step-item">
-            <span class="step-number">2</span>
-            <div class="step-content">
-              Откройте вкладку <span class="code-chip" id="copy-chrome-url" title="Нажмите, чтобы скопировать">chrome://extensions 📋</span> и включите переключатель <strong>«Режим разработчика»</strong> в правом верхнем углу.
-            </div>
-          </div>
-          <div class="step-item">
-            <span class="step-number">3</span>
-            <div class="step-content">
-              Нажмите кнопку <strong>«Загрузить распакованное расширение»</strong> и выберите распакованную папку, либо просто перетащите её мышью на страницу расширений.
-            </div>
-          </div>
-        `;
+      function navigateTo(target, updateHash = true) {
+        const pages = {
+          home: pageHome,
+          chrome: pageChrome,
+          safari: pageSafari
+        };
 
-        document.getElementById('copy-chrome-url')?.addEventListener('click', () => {
-          navigator.clipboard.writeText('chrome://extensions').then(() => {
-            showToast('Адрес chrome://extensions скопирован!');
-          });
+        const activeTarget = pages[target] ? target : 'home';
+
+        Object.entries(pages).forEach(([key, el]) => {
+          if (el) el.classList.toggle('active', key === activeTarget);
         });
 
-        openModal();
-      }
+        // Update nav-bar active states
+        navPreviews?.classList.toggle('active', activeTarget === 'home');
+        navChrome?.classList.toggle('active', activeTarget === 'chrome');
+        navSafari?.classList.toggle('active', activeTarget === 'safari');
 
-      // 5. Manual Install Flow for Safari
-      function openSafariInstall() {
-        triggerDownload('pipedrive-fields-safari.zip', 'pipedrive-fields-safari.zip');
+        // Update tab switch buttons inside guide pages
+        document.querySelectorAll('.guide-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.target === activeTarget);
+        });
 
-        modalTitle.textContent = 'Установка в Apple Safari';
-        modalSteps.innerHTML = `
-          <div class="step-item">
-            <span class="step-number">1</span>
-            <div class="step-content">
-              Распакуйте скачанный архив <strong>pipedrive-fields-safari.zip</strong> в удобную папку.
-            </div>
-          </div>
-          <div class="step-item">
-            <span class="step-number">2</span>
-            <div class="step-content">
-              В меню Safari откройте <strong>Настройки…</strong> (⌘,) → вкладка <strong>Дополнения</strong> → включите флажок <strong>«Показывать функции для веб-разработчиков»</strong>.
-            </div>
-          </div>
-          <div class="step-item">
-            <span class="step-number">3</span>
-            <div class="step-content">
-              Перейдите в верхнее меню Safari <strong>Разработка</strong> → <strong>«Загрузить временное расширение…»</strong> и укажите распакованную папку.
-            </div>
-          </div>
-        `;
-
-        openModal();
-      }
-
-      function openModal() {
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeModal() {
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
-      // Event Listeners
-      btnInstallChrome?.addEventListener('click', openChromeInstall);
-      btnInstallSafari?.addEventListener('click', openSafariInstall);
-      navChrome?.addEventListener('click', (e) => { e.preventDefault(); openChromeInstall(); });
-      navSafari?.addEventListener('click', (e) => { e.preventDefault(); openSafariInstall(); });
-      modalClose?.addEventListener('click', closeModal);
-      modalDone?.addEventListener('click', closeModal);
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-          closeModal();
+        // Update footer slide info
+        if (slideNumber) {
+          slideNumber.textContent = activeTarget === 'chrome' ? '.02' : activeTarget === 'safari' ? '.03' : '.01';
         }
+        if (indicatorText) {
+          indicatorText.textContent = activeTarget === 'chrome' ? 'CHROME GUIDE' : activeTarget === 'safari' ? 'SAFARI GUIDE' : 'SINGLE VIEW';
+        }
+
+        // Update URL hash
+        if (updateHash) {
+          if (activeTarget === 'chrome' && location.hash !== '#chrome') {
+            history.pushState(null, '', '#chrome');
+          } else if (activeTarget === 'safari' && location.hash !== '#safari') {
+            history.pushState(null, '', '#safari');
+          } else if (activeTarget === 'home' && location.hash && location.hash !== '#') {
+            history.pushState(null, '', location.pathname);
+          }
+        }
+
+        // Scroll guide container to top when entering
+        document.querySelectorAll('.guide-container').forEach(gc => {
+          gc.scrollTop = 0;
+        });
+      }
+
+      // Hash routing
+      function handleHashRoute() {
+        const hash = location.hash.toLowerCase();
+        if (hash === '#chrome') {
+          navigateTo('chrome', false);
+        } else if (hash === '#safari') {
+          navigateTo('safari', false);
+        } else {
+          navigateTo('home', false);
+        }
+      }
+      window.addEventListener('hashchange', handleHashRoute);
+      window.addEventListener('popstate', handleHashRoute);
+
+      // Event Listeners for Navigation
+      navPreviews?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('home');
       });
+
+      navChrome?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('chrome');
+      });
+
+      navSafari?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('safari');
+      });
+
+      document.querySelector('.brand-logo')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('home');
+      });
+
+      // Install buttons on Home cards: download and switch view to guide
+      btnInstallChrome?.addEventListener('click', () => {
+        triggerDownload('pipedrive-fields-chrome.zip', 'pipedrive-fields-chrome.zip');
+        navigateTo('chrome');
+      });
+
+      btnInstallSafari?.addEventListener('click', () => {
+        triggerDownload('pipedrive-fields-safari.zip', 'pipedrive-fields-safari.zip');
+        navigateTo('safari');
+      });
+
+      // Back buttons and switch tabs
+      document.querySelectorAll('[data-target]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          navigateTo(btn.dataset.target);
+        });
+      });
+
+      // Copyable chips (chrome://extensions)
+      document.querySelectorAll('.copyable-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const textToCopy = chip.dataset.copy || chip.textContent.replace('📋', '').trim();
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast(`Адрес ${textToCopy} скопирован в буфер обмена!`);
+          }).catch(() => {
+            showToast('Скопировано!');
+          });
+        });
+      });
+
+      // Initialize route from current URL hash
+      handleHashRoute();
     })();
   </script>
 </body>
