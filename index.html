@@ -400,42 +400,53 @@
       max-width: 560px;
     }
 
-    /* Compact Cat Card in Left Col */
-    .cat-showcase-box {
-      display: flex;
-      align-items: flex-end;
-      gap: 20px;
-      padding: 14px 20px;
-      background: #FFC500;
-      border: 1px solid #FFC500;
-      border-radius: 18px;
+    /* === Layered Cat Widget === */
+
+    /* Outer wrapper: provides positioning context */
+    .cat-widget-wrap {
+      position: relative;
       width: fit-content;
-      margin-top: 4px;
+      margin-top: 10px;
+      /* Top padding accommodates the cat sticking out above the yellow block */
+      padding-top: 95px;
       cursor: pointer;
       user-select: none;
-      transition: border-color 0.25s ease, background 0.25s ease, transform 0.15s ease;
-      overflow: visible;
     }
 
-    .cat-showcase-box:hover {
+    /* Yellow block: compact layer, text only */
+    .cat-showcase-box {
+      display: flex;
+      align-items: center;
+      padding: 18px 28px 18px 180px;
+      background: #FFC500;
+      border: 1px solid #FFC500;
+      border-radius: 20px;
+      width: fit-content;
+      min-height: 84px;
+      box-sizing: border-box;
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.15s ease;
+    }
+
+    .cat-widget-wrap:hover .cat-showcase-box {
       background: #FFC500;
       border-color: #d9a700;
     }
 
-    .cat-showcase-box:active {
+    .cat-widget-wrap:active .cat-showcase-box {
       transform: scale(0.985);
     }
 
+    /* Cat layer: absolute, sticks to bottom-left, overflows top */
     .cat-hero-wrap {
-      position: relative;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      z-index: 2;
       display: flex;
       align-items: flex-end;
-      justify-content: center;
       cursor: pointer;
       user-select: none;
       flex-shrink: 0;
-      /* Cat bottom flush with block bottom, cat overflows top ~40% */
-      margin-bottom: -14px;
     }
 
     .cat-info-text {
@@ -1390,8 +1401,10 @@
           Элегантное решение для быстрой работы в CRM. Автоматическое скрытие неиспользуемых полей без скачков скролла и встроенная автономная история последних 10 000 сделок с умным поиском.
         </p>
 
-        <!-- Interactive Animated Mascot Widget -->
-        <div class="cat-showcase-box" id="cat-showcase-box" title="Кликните, чтобы котик подпрыгнул и замурлыкал">
+        <!-- Interactive Animated Mascot Widget: two separate layers -->
+        <div class="cat-widget-wrap" id="cat-showcase-box" title="Кликните, чтобы котик подпрыгнул и замурлыкал">
+
+          <!-- Layer 1: Cat (absolute, sits on top of yellow block) -->
           <div class="cat-hero-wrap" id="cat-hero-wrap">
             <div class="css-cat">
               <button type="button" class="css-cat-trigger" aria-label="Погладить котика" title="Погладить котика"></button>
@@ -1428,10 +1441,14 @@
             </div>
           </div>
 
-          <div class="cat-info-text">
-            <div class="cat-info-title">Интерактивный маскот 🐾</div>
-            <div class="cat-info-subtitle">Кликните, чтобы разбудить котика и услышать мурлыканье</div>
+          <!-- Layer 2: Yellow block (compact, text only) -->
+          <div class="cat-showcase-box">
+            <div class="cat-info-text">
+              <div class="cat-info-title">Интерактивный маскот 🐾</div>
+              <div class="cat-info-subtitle">Кликните, чтобы разбудить котика и услышать мурлыканье</div>
+            </div>
           </div>
+
         </div>
 
         <!-- Metric Badges -->
