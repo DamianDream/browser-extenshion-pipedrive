@@ -788,6 +788,8 @@
   }
 
   let catEl = null;
+  let leftEyeEl = null;
+  let rightEyeEl = null;
   let leftPupil = null;
   let rightPupil = null;
   let catRafId = null;
@@ -798,14 +800,13 @@
   let motionMediaQuery = null;
   let isReducedMotion = false;
 
-  function getCatEyeCenter(cxSvg, cySvg) {
-    if (!catEl) return { x: 0, y: 0 };
-    const rect = catEl.getBoundingClientRect();
-    const scaleX = rect.width / 74;
-    const scaleY = rect.height / 62;
+  function getEyeCenter(eyeEl) {
+    if (!eyeEl) return { x: 0, y: 0, r: 10 };
+    const rect = eyeEl.getBoundingClientRect();
     return {
-      x: rect.left + cxSvg * scaleX,
-      y: rect.top + cySvg * scaleY
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      r: rect.width / 2
     };
   }
 
@@ -825,26 +826,26 @@
     leftPupil.classList.remove('returning');
     rightPupil.classList.remove('returning');
 
-    const maxRadius = 4.8;
-
-    // Left eye (center cx=22, cy=34)
-    const lCenter = getCatEyeCenter(22, 34);
+    // Left eye
+    const lCenter = getEyeCenter(leftEyeEl);
     const ldx = catMouseX - lCenter.x;
     const ldy = catMouseY - lCenter.y;
     const ldist = Math.hypot(ldx, ldy);
     const langle = Math.atan2(ldy, ldx);
-    const ltravel = maxRadius * (ldist / (ldist + 120));
+    const lMaxTravel = lCenter.r * 0.45;
+    const ltravel = lMaxTravel * (ldist / (ldist + 130));
     const lx = Math.cos(langle) * ltravel;
     const ly = Math.sin(langle) * ltravel;
     leftPupil.style.transform = `translate(${lx.toFixed(2)}px, ${ly.toFixed(2)}px)`;
 
-    // Right eye (center cx=52, cy=34)
-    const rCenter = getCatEyeCenter(52, 34);
+    // Right eye
+    const rCenter = getEyeCenter(rightEyeEl);
     const rdx = catMouseX - rCenter.x;
     const rdy = catMouseY - rCenter.y;
     const rdist = Math.hypot(rdx, rdy);
     const rangle = Math.atan2(rdy, rdx);
-    const rtravel = maxRadius * (rdist / (rdist + 120));
+    const rMaxTravel = rCenter.r * 0.45;
+    const rtravel = rMaxTravel * (rdist / (rdist + 130));
     const rx = Math.cos(rangle) * rtravel;
     const ry = Math.sin(rangle) * rtravel;
     rightPupil.style.transform = `translate(${rx.toFixed(2)}px, ${ry.toFixed(2)}px)`;
@@ -918,6 +919,8 @@
     }
 
     catEl = null;
+    leftEyeEl = null;
+    rightEyeEl = null;
     leftPupil = null;
     rightPupil = null;
   }
@@ -941,11 +944,15 @@
       }
       updateFabAccent();
       catEl = existing.querySelector('#pf-deal-cat');
+      leftEyeEl = existing.querySelector('.pf-cat-eye-left');
+      rightEyeEl = existing.querySelector('.pf-cat-eye-right');
       leftPupil = existing.querySelector('#pf-cat-pupil-left');
       rightPupil = existing.querySelector('#pf-cat-pupil-right');
       startCatEyeTracking();
       return;
     }
+
+    const catImageUrl = PF.api?.runtime?.getURL ? PF.api.runtime.getURL('deal-cat.png') : 'deal-cat.png';
 
     fabContainer = document.createElement('div');
     fabContainer.id = 'pf-deal-fab-container';
@@ -969,62 +976,13 @@
       </div>
 
       <div id="pf-deal-cat" aria-hidden="true">
-        <svg viewBox="0 0 74 62" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="pfCatHeadGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2a2c33" />
-              <stop offset="35%" stop-color="#18191d" />
-              <stop offset="100%" stop-color="#0c0d10" />
-            </linearGradient>
-            <radialGradient id="pfCatEyeGrad" cx="42%" cy="38%" r="60%">
-              <stop offset="0%" stop-color="#FFF066" />
-              <stop offset="45%" stop-color="#FFC500" />
-              <stop offset="80%" stop-color="#E69500" />
-              <stop offset="100%" stop-color="#B36800" />
-            </radialGradient>
-            <radialGradient id="pfEyeRimShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="85%" stop-color="rgba(0,0,0,0)" />
-              <stop offset="100%" stop-color="rgba(0,0,0,0.4)" />
-            </radialGradient>
-            <clipPath id="pfLeftEyeClip">
-              <circle cx="22" cy="34" r="15" />
-            </clipPath>
-            <clipPath id="pfRightEyeClip">
-              <circle cx="52" cy="34" r="15" />
-            </clipPath>
-            <linearGradient id="pfEyeTopShadow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgba(0,0,0,0.45)" />
-              <stop offset="32%" stop-color="rgba(0,0,0,0)" />
-            </linearGradient>
-          </defs>
-          <path d="M 12 2 C 7 9 3 19 3 29 C 13 26 21 21 24 16 Z" fill="#18191d" stroke="#2e3038" stroke-width="0.7" />
-          <path d="M 12 6 C 8 12 6 19 5 26 C 12 23 18 19 20 16 Z" fill="#2d2225" />
-          <path d="M 62 2 C 67 9 71 19 71 29 C 61 26 53 21 50 16 Z" fill="#18191d" stroke="#2e3038" stroke-width="0.7" />
-          <path d="M 62 6 C 66 12 68 19 69 26 C 62 23 56 19 54 16 Z" fill="#2d2225" />
-          <path d="M 3 62 C 3 31 10 14 37 14 C 64 14 71 31 71 62 Z" fill="url(#pfCatHeadGrad)" stroke="#2e3038" stroke-width="0.7" />
-          <circle cx="22" cy="34" r="15" fill="url(#pfCatEyeGrad)" stroke="#101114" stroke-width="1.2" />
-          <circle cx="22" cy="34" r="15" fill="url(#pfEyeRimShadow)" pointer-events="none" />
-          <g clip-path="url(#pfLeftEyeClip)">
-            <g class="pf-cat-pupil" id="pf-cat-pupil-left">
-              <circle cx="22" cy="34" r="9.5" fill="#090a0d" />
-              <circle cx="19" cy="30.5" r="2.8" fill="#ffffff" opacity="0.95" />
-              <circle cx="25" cy="37" r="1.3" fill="#ffffff" opacity="0.75" />
-            </g>
-            <circle cx="22" cy="34" r="15" fill="url(#pfEyeTopShadow)" pointer-events="none" />
-          </g>
-          <circle cx="52" cy="34" r="15" fill="url(#pfCatEyeGrad)" stroke="#101114" stroke-width="1.2" />
-          <circle cx="52" cy="34" r="15" fill="url(#pfEyeRimShadow)" pointer-events="none" />
-          <g clip-path="url(#pfRightEyeClip)">
-            <g class="pf-cat-pupil" id="pf-cat-pupil-right">
-              <circle cx="52" cy="34" r="9.5" fill="#090a0d" />
-              <circle cx="49" cy="30.5" r="2.8" fill="#ffffff" opacity="0.95" />
-              <circle cx="55" cy="37" r="1.3" fill="#ffffff" opacity="0.75" />
-            </g>
-            <circle cx="52" cy="34" r="15" fill="url(#pfEyeTopShadow)" pointer-events="none" />
-          </g>
-          <path d="M 35 46 Q 37 44.6 39 46 Q 37 48.8 35 46 Z" fill="#3b2b27" />
-          <path d="M 37 47.8 L 37 49.5 M 35.2 50.5 Q 37 49.5 38.8 50.5" stroke="#261b17" stroke-width="0.8" stroke-linecap="round" fill="none" />
-        </svg>
+        <img class="pf-cat-body" src="${catImageUrl}" alt="" />
+        <div class="pf-cat-eye pf-cat-eye-left">
+          <div class="pf-cat-pupil" id="pf-cat-pupil-left"></div>
+        </div>
+        <div class="pf-cat-eye pf-cat-eye-right">
+          <div class="pf-cat-pupil" id="pf-cat-pupil-right"></div>
+        </div>
       </div>
 
       <div id="pf-deal-fab" title="Deal History">
@@ -1041,6 +999,8 @@
     `;
 
     catEl = fabContainer.querySelector('#pf-deal-cat');
+    leftEyeEl = fabContainer.querySelector('.pf-cat-eye-left');
+    rightEyeEl = fabContainer.querySelector('.pf-cat-eye-right');
     leftPupil = fabContainer.querySelector('#pf-cat-pupil-left');
     rightPupil = fabContainer.querySelector('#pf-cat-pupil-right');
     startCatEyeTracking();
