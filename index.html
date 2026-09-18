@@ -406,6 +406,7 @@
       align-items: center;
       gap: 20px;
       padding: 14px 20px;
+      padding-top: 18px;
       background: #FFC500;
       border: 1px solid #FFC500;
       border-radius: 18px;
@@ -414,6 +415,7 @@
       cursor: pointer;
       user-select: none;
       transition: border-color 0.25s ease, background 0.25s ease, transform 0.15s ease;
+      overflow: visible;
     }
 
     .cat-showcase-box:hover {
@@ -433,6 +435,8 @@
       cursor: pointer;
       user-select: none;
       flex-shrink: 0;
+      /* Pull cat upward so ~10% of it peeks above the yellow block */
+      margin-top: -14px;
     }
 
     .cat-info-text {
@@ -756,7 +760,7 @@
     }
 
     .css-cat {
-      --css-cat-size: 92px;
+      --css-cat-size: 120px;
       width: var(--css-cat-size);
       height: var(--css-cat-size);
       position: relative;
