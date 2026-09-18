@@ -43,8 +43,51 @@
   visibility: visible !important;
 }
 
+/* Decorative vector cat head peeking from behind the button */
+#pf-deal-cat {
+  position: absolute !important;
+  bottom: 34px !important;
+  right: -10px !important;
+  width: 72px !important;
+  height: 60px !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transform-origin: bottom center !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#pf-deal-fab-container:hover #pf-deal-cat {
+  transform: translateY(-5px) !important;
+}
+
+#pf-deal-fab-container:active #pf-deal-cat {
+  transform: translateY(1px) !important;
+}
+
+.pf-cat-pupil {
+  transition: transform 0.08s ease-out !important;
+  will-change: transform !important;
+}
+
+.pf-cat-pupil.returning {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pf-deal-cat {
+    transition: none !important;
+    transform: none !important;
+  }
+  .pf-cat-pupil {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
 #pf-deal-fab {
   position: relative !important;
+  z-index: 2 !important;
   height: 52px !important;
   width: 52px !important;
   border-radius: 26px !important;
