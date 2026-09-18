@@ -30,7 +30,7 @@
   --pf-fab-hover-overlay: rgba(0, 0, 0, 0.1);
   position: fixed !important;
   bottom: 24px !important;
-  right: 24px !important;
+  right: 34px !important;
   z-index: 2147483647 !important;
   display: flex !important;
   flex-direction: column !important;
@@ -46,8 +46,8 @@
 /* Decorative cat holding the button with interactive tracking eyes */
 #pf-deal-cat {
   position: absolute !important;
-  bottom: 8px !important;
-  right: -50px !important;
+  bottom: 6px !important;
+  right: -46px !important;
   width: 140px !important;
   height: 113px !important;
   z-index: 3 !important;
@@ -180,6 +180,7 @@
 #pf-deal-fab-container:hover #pf-deal-fab,
 #pf-deal-fab.pf-expanded,
 #pf-deal-fab:focus-within {
+  z-index: 10 !important;
   width: 196px !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.38), 0 3px 10px rgba(0, 0, 0, 0.22) !important;
 }
